@@ -5,6 +5,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { applySEO, PAGE_SEO } from '../lib/seo';
 import { KINDO_LOGO_URL } from './PageTransition';
+import LandingScrollProgress, { LandingSectionItem } from './LandingScrollProgress';
+
+const LANDING_SECTIONS: LandingSectionItem[] = [
+  { id: 'beranda', label: 'Beranda' },
+  { id: 'fitur', label: 'Fitur' },
+  { id: 'cara-kerja', label: 'Cara Kerja' },
+  { id: 'tim-kami', label: 'Tim Kami' },
+];
 
 export default function LandingView() {
   const navigate = useNavigate();
@@ -100,6 +108,15 @@ export default function LandingView() {
           backgroundImage:
             'radial-gradient(680px 380px at 50% 6%, rgba(217, 249, 157, 0.05), transparent 70%), radial-gradient(620px 620px at 5% 95%, rgba(6, 78, 59, 0.22), transparent 70%), radial-gradient(520px 520px at 96% 52%, rgba(140, 198, 63, 0.06), transparent 70%)',
         }}
+      />
+
+      {/* Scroll Progress System (Top Luminous Rail, Desktop Milestone Rail & Circular Back-to-Top Ring) */}
+      <LandingScrollProgress
+        progress={smoothProgress}
+        rawProgress={scrollYProgress}
+        sections={LANDING_SECTIONS}
+        activeSection={activeSection}
+        onNavigateSection={scrollToSection}
       />
 
       {/* Navigation (Floating Pill) */}
