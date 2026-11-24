@@ -1047,7 +1047,7 @@ export default function KonsultasiNakesView({
   const isChatAllowed = currentUser.role !== 'orang_tua' || Boolean(selectedContact?.isAssignedNakes);
 
   const handleSendMessage = async (customText?: string) => {
-    if (!isChatAllowed) return;
+    if (!isChatAllowed || !selectedContact) return;
     const textToSend = (customText || inputText).trim();
     if (!textToSend) return;
 
@@ -1083,7 +1083,7 @@ export default function KonsultasiNakesView({
   };
 
   const handleVoiceSend = async () => {
-    if (!isChatAllowed) return;
+    if (!isChatAllowed || !selectedContact) return;
     setIsRecordingVoice(false);
     const durationFormatted = `0:${voiceSeconds < 10 ? '0' : ''}${voiceSeconds}`;
     const voiceMsg: ChatMessage = {

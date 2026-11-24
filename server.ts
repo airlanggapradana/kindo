@@ -7,6 +7,30 @@ import { INTERVENSI_KNOWLEDGE } from "./src/data/knowledge.ts";
 
 let aiClient: GoogleGenAI | null = null;
 
+// ── In-memory cache untuk hasil pencarian puskesmas ──────────────────────────
+// Key: "lat_lng" dibulatkan ke 2 desimal (~1.1 km presisi), TTL: 10 menit
+const puskesmasCache = new Map<string, { result: any; ts: number }>();
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 menit
+
+function getPuskesmasCacheKey(lat: number, lng: number): string {
+  return `${lat.toFixed(2)}_${lng.toFixed(2)}`;
+}
+
+function getCachedPuskesmas(lat: number, lng: number) {
+  const key = getPuskesmasCacheKey(lat, lng);
+  const cached = puskesmasCache.get(key);
+  if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
+    return cached.result;
+  }
+  puskesmasCache.delete(key);
+  return null;
+}
+
+function setCachedPuskesmas(lat: number, lng: number, result: any) {
+  const key = getPuskesmasCacheKey(lat, lng);
+  puskesmasCache.set(key, { result, ts: Date.now() });
+}
+
 function getAiClient(): GoogleGenAI | null {
   if (!aiClient) {
     const key = process.env.GEMINI_API_KEY;
@@ -627,54 +651,108 @@ ${text}`;
     try {
       const { lat, lng } = req.body;
 
-      const prompt = `Carikan daftar puskesmas terdekat dari koordinat lokasi ini: Latitude ${lat}, Longitude ${lng}. 
-Berikan rekomendasi 3-5 puskesmas beserta detail estimasi jarak, alamat lengkap, nomor telepon, dan koordinat marker (latitude, longitude).
-Keluarkan struktur data murni dalam format JSON object dengan satu key "puskesmas" yang berisi array of objects. Setiap object harus memiliki tipe data dan key berikut persis:
-{
-  "puskesmas": [
-    {
-      "name": "Nama Puskesmas",
-      "address": "Alamat Lengkap",
-      "distance": "Jarak (misal 2.5 km)",
-      "phone": "Nomor Telepon",
-      "lat": -6.213,
-      "lng": 106.845
-    }
-  ]
-}`;
+      // ── Strategi 0: Kembalikan dari cache jika ada (instan) ───────────────────
+      const cached = getCachedPuskesmas(lat, lng);
+      if (cached) {
+        return res.json({
+          result: cached.result,
+          isFallback: cached.isFallback,
+          fromCache: true,
+        });
+      }
 
-      let parsedResult;
-      let isFallback = false;
-      const ai = getAiClient();
-
-      if (!ai) {
-        parsedResult = { puskesmas: generateFallbackPuskesmas(lat, lng) };
-        isFallback = true;
-      } else {
+      // ── Strategi 1: Google Places Nearby Search API (cepat ~1-3 detik) ────────
+      const mapsKey =
+        process.env.GOOGLE_MAPS_PLATFORM_KEY ||
+        process.env.VITE_GOOGLE_MAPS_PLATFORM_KEY;
+      if (mapsKey && mapsKey.trim().length > 0) {
         try {
+          const radius = 5000; // 5 km radius
+          const placesUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${radius}&keyword=puskesmas&language=id&key=${mapsKey}`;
+
+          const placesRes = await fetch(placesUrl, {
+            signal: AbortSignal.timeout(8000),
+          });
+          if (placesRes.ok) {
+            const placesData = await placesRes.json();
+            if (placesData.status === "OK" && placesData.results?.length > 0) {
+              const puskesmas = placesData.results
+                .slice(0, 5)
+                .map((place: any) => {
+                  const pLat = place.geometry?.location?.lat ?? lat;
+                  const pLng = place.geometry?.location?.lng ?? lng;
+                  const dist = calculateDistance(lat, lng, pLat, pLng);
+                  return {
+                    name: place.name,
+                    address: place.vicinity || place.formatted_address || "-",
+                    distance: `${dist.toFixed(1)} km`,
+                    phone: place.formatted_phone_number || "-",
+                    lat: pLat,
+                    lng: pLng,
+                  };
+                })
+                .sort(
+                  (a: any, b: any) =>
+                    parseFloat(a.distance) - parseFloat(b.distance),
+                );
+
+              const finalResult = { puskesmas };
+              setCachedPuskesmas(lat, lng, {
+                result: finalResult,
+                isFallback: false,
+              });
+              return res.json({ result: finalResult, isFallback: false });
+            }
+          }
+        } catch (placesError: any) {
+          console.info(
+            "Google Places API unavailable, falling back to Gemini:",
+            placesError?.message,
+          );
+        }
+      }
+
+      // ── Strategi 2: Gemini flash tanpa Google Search (fallback cepat ~5-10 detik) ─
+      const ai = getAiClient();
+      if (ai) {
+        try {
+          const prompt = `Berikan daftar 4-5 puskesmas yang realistis dan umum dikenal di Indonesia terdekat dari koordinat: Latitude ${lat}, Longitude ${lng}.
+Gunakan pengetahuan umum Anda tentang nama puskesmas nyata di kota/wilayah tersebut.
+Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format persis:
+{"puskesmas":[{"name":"Nama Puskesmas","address":"Alamat Lengkap","distance":"X.X km","phone":"Nomor Telp atau -","lat":${lat},"lng":${lng}}]}`;
+
           const response = await ai.models.generateContent({
-            model: "gemini-4-hydrogen",
+            model: "gemini-3.8-flash",
             contents: prompt,
             config: {
-              tools: [{ googleSearch: {} }],
+              responseMimeType: "application/json",
             },
           });
 
           const text = response.text || "{}";
           const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
           const jsonString = jsonMatch ? jsonMatch[1] : text;
-          parsedResult = JSON.parse(jsonString);
-          isFallback = false;
+          const parsedResult = JSON.parse(jsonString);
+
+          if (parsedResult?.puskesmas?.length > 0) {
+            setCachedPuskesmas(lat, lng, {
+              result: parsedResult,
+              isFallback: false,
+            });
+            return res.json({ result: parsedResult, isFallback: false });
+          }
         } catch (geminiError: any) {
           console.info(
-            "Gemini Puskesmas search unavailable, using accurate geographical distance calculation fallback.",
+            "Gemini Puskesmas search unavailable, using geographical fallback:",
+            geminiError?.message,
           );
-          parsedResult = { puskesmas: generateFallbackPuskesmas(lat, lng) };
-          isFallback = true;
         }
       }
 
-      res.json({ result: parsedResult, isFallback });
+      // ── Strategi 3: Fallback lokal berbasis koordinat (instan) ───────────────
+      const parsedResult = { puskesmas: generateFallbackPuskesmas(lat, lng) };
+      setCachedPuskesmas(lat, lng, { result: parsedResult, isFallback: true });
+      return res.json({ result: parsedResult, isFallback: true });
     } catch (error: any) {
       console.error("Error finding puskesmas:", error);
       res.status(500).json({

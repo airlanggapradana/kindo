@@ -43,7 +43,7 @@ function RouteDisplay({ origin, destination, onError }: {
       travelMode: 'DRIVING',
       fields: ['path', 'distanceMeters', 'durationMillis', 'viewport'],
       routingPreference: 'TRAFFIC_AWARE'
-    }).then(({ routes }) => {
+    }).then(({ routes }: any) => {
       polylinesRef.current.forEach(p => p.setMap(null));
       if (routes?.[0]) {
         const newPolylines = routes[0].createPolylines();
@@ -51,7 +51,7 @@ function RouteDisplay({ origin, destination, onError }: {
         polylinesRef.current = newPolylines;
         if (routes[0].viewport) map.fitBounds(routes[0].viewport);
       }
-    }).catch(error => {
+    }).catch((error: any) => {
       console.error("Directions routing failed:", error);
       onError("Fitur rute (Routes API) belum diaktifkan pada project Google Cloud Platform (API Key) yang Anda gunakan.");
     });
@@ -81,6 +81,7 @@ export default function PuskesmasMapModal({ isOpen, onClose }: PuskesmasMapModal
   const [aiError, setAiError] = useState<string | null>(null);
   const [selectedPuskesmas, setSelectedPuskesmas] = useState<Puskesmas | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
+  const [isFallback, setIsFallback] = useState(false);
   const [routeError, setRouteError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -153,18 +154,19 @@ export default function PuskesmasMapModal({ isOpen, onClose }: PuskesmasMapModal
       const data = await res.json();
       
       if (!res.ok) {
-        setAiError(data.error || "Terjadi kesalahan pada layanan Gemini AI. Silakan coba beberapa saat lagi.");
+        setAiError(data.error || "Terjadi kesalahan pada layanan pencarian. Silakan coba beberapa saat lagi.");
         return;
       }
 
       if (data.result && data.result.puskesmas) {
         setAiResult(data.result.puskesmas);
+        setIsFallback(!!data.isFallback);
       } else {
-        setAiError("Gagal memproses rekomendasi puskesmas dari Gemini AI. Silakan coba lagi.");
+        setAiError("Gagal memproses rekomendasi puskesmas. Silakan coba lagi.");
       }
     } catch (err) {
       console.error(err);
-      setAiError("Terjadi kesalahan koneksi saat mencari puskesmas menggunakan Gemini AI.");
+      setAiError("Terjadi kesalahan koneksi saat mencari puskesmas.");
     } finally {
       setLoadingAi(false);
     }
@@ -249,7 +251,7 @@ export default function PuskesmasMapModal({ isOpen, onClose }: PuskesmasMapModal
                     <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-2">
                       <Sparkles className="w-6 h-6 text-emerald-600 animate-pulse" />
                     </div>
-                    <span className="text-sm font-medium text-center">Kami sedang mencari puskesmas terbaik di sekitar Anda...</span>
+                    <span className="text-sm font-medium text-center">Mencari puskesmas terdekat...</span>
                     <Loader2 className="w-6 h-6 animate-spin text-emerald-600/50" />
                   </div>
                 ) : aiError ? (
@@ -278,6 +280,13 @@ export default function PuskesmasMapModal({ isOpen, onClose }: PuskesmasMapModal
                         >
                           Coba Lagi
                         </button>
+                      </div>
+                    )}
+                    {/* Data source badge */}
+                    {isFallback && (
+                      <div className="mb-3 p-2.5 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-xl text-xs text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                        <MapPin className="w-3.5 h-3.5 shrink-0 text-blue-500" />
+                        <span>Menampilkan data referensi. Aktifkan Maps API untuk data real-time.</span>
                       </div>
                     )}
                     <div className="space-y-3 overflow-y-auto flex-1 pr-2 pb-4">

@@ -341,10 +341,10 @@ const resources = {
 Object.values(QUESTIONS_DATA).forEach((categories) => {
   categories.forEach((q) => {
     // ID
-    resources.id.translation[`question.${q.id}`] = q.pertanyaan;
+    (resources.id.translation as Record<string, string>)[`question.${q.id}`] = q.pertanyaan;
     
     // EN
-    resources.en.translation[`question.${q.id}`] = enTranslations[q.id] || q.pertanyaan;
+    (resources.en.translation as Record<string, string>)[`question.${q.id}`] = enTranslations[q.id] || q.pertanyaan;
   });
 });
 
