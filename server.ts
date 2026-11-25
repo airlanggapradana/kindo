@@ -1,9 +1,164 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+dotenv.config({ quiet: true });
 import express from "express";
+import os from "os";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import { INTERVENSI_KNOWLEDGE } from "./src/data/knowledge.ts";
+
+// ── Terminal Styling & Logger Utilities ───────────────────────────────────────
+const c = {
+  reset: "\x1b[0m",
+  bold: "\x1b[1m",
+  dim: "\x1b[2m",
+  teal: "\x1b[38;5;37m",
+  emerald: "\x1b[38;5;42m",
+  mint: "\x1b[38;5;121m",
+  cyan: "\x1b[36m",
+  green: "\x1b[32m",
+  amber: "\x1b[38;5;214m",
+  red: "\x1b[31m",
+  magenta: "\x1b[35m",
+  white: "\x1b[97m",
+  gray: "\x1b[90m",
+};
+
+const stripAnsi = (str: string) => str.replace(/\x1b\[[0-9;]*m/g, "");
+
+function formatTime(): string {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  const ss = String(now.getSeconds()).padStart(2, "0");
+  return `${hh}:${mm}:${ss}`;
+}
+
+function getNetworkIp(): string | null {
+  const interfaces = os.networkInterfaces();
+  for (const entries of Object.values(interfaces)) {
+    if (!entries) continue;
+    for (const iface of entries) {
+      if (iface.family === "IPv4" && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return null;
+}
+
+const logger = {
+  info(tag: string, message: string) {
+    console.log(
+      `  ${c.gray}${formatTime()}${c.reset}  ${c.cyan}${c.bold}${tag.padEnd(6)}${c.reset}  ${message}`,
+    );
+  },
+  success(tag: string, message: string) {
+    console.log(
+      `  ${c.gray}${formatTime()}${c.reset}  ${c.emerald}${c.bold}${tag.padEnd(6)}${c.reset}  ${message}`,
+    );
+  },
+  warn(tag: string, message: string) {
+    console.log(
+      `  ${c.gray}${formatTime()}${c.reset}  ${c.amber}${c.bold}${tag.padEnd(6)}${c.reset}  ${message}`,
+    );
+  },
+  error(tag: string, message: string, detail?: unknown) {
+    console.error(
+      `  ${c.gray}${formatTime()}${c.reset}  ${c.red}${c.bold}${tag.padEnd(6)}${c.reset}  ${message}`,
+    );
+    if (detail) {
+      const errMsg = detail instanceof Error ? detail.message : String(detail);
+      console.error(`            ${c.gray}└─ ${errMsg}${c.reset}`);
+    }
+  },
+};
+
+function printStartupBanner(port: number, bootMs: number, isProd: boolean) {
+  const innerWidth = 58;
+  const line = "─".repeat(innerWidth);
+  const padLine = (content: string) => {
+    const visibleLen = stripAnsi(content).length;
+    const pad = Math.max(0, innerWidth - visibleLen);
+    return `  ${c.teal}│${c.reset}${content}${" ".repeat(pad)}${c.teal}│${c.reset}`;
+  };
+  const emptyLine = padLine("");
+
+  const networkIp = getNetworkIp();
+  const hasGemini = Boolean(process.env.GEMINI_API_KEY?.trim());
+  const hasMaps = Boolean(
+    (
+      process.env.GOOGLE_MAPS_PLATFORM_KEY ||
+      process.env.VITE_GOOGLE_MAPS_PLATFORM_KEY
+    )?.trim(),
+  );
+
+  const badgeText = isProd ? "PROD" : "DEV";
+  const headerLeft = `   ${c.emerald}${c.bold}◆ KINDO${c.reset} ${c.white}${c.bold}${badgeText} SERVER${c.reset}`;
+  const headerRight = `${c.gray}Node ${process.version}  •  ${c.mint}${bootMs}ms${c.reset}   `;
+  const headerGap = Math.max(
+    1,
+    innerWidth - stripAnsi(headerLeft).length - stripAnsi(headerRight).length,
+  );
+
+  const statusBadge = (ok: boolean, okText: string, offText: string) =>
+    ok
+      ? `${c.emerald}●${c.reset}  ${c.white}${okText}${c.reset}`
+      : `${c.amber}○${c.reset}  ${c.amber}${offText}${c.reset}`;
+
+  const rows = [
+    "",
+    `  ${c.teal}╭${line}╮${c.reset}`,
+    emptyLine,
+    padLine(`${headerLeft}${" ".repeat(headerGap)}${headerRight}`),
+    padLine(
+      `   ${c.gray}Platform Pemantauan Tumbuh Kembang Anak (KPSP)${c.reset}`,
+    ),
+    emptyLine,
+    `  ${c.teal}├${line}┤${c.reset}`,
+    emptyLine,
+    padLine(
+      `   ${c.emerald}➜${c.reset}  ${c.bold}${c.white}Local${c.reset}     ${c.cyan}http://localhost:${c.bold}${port}${c.reset}`,
+    ),
+    padLine(
+      `   ${c.emerald}➜${c.reset}  ${c.bold}${c.white}Network${c.reset}   ${
+        networkIp
+          ? `${c.cyan}http://${networkIp}:${c.bold}${port}${c.reset}`
+          : `${c.gray}unavailable${c.reset}`
+      }`,
+    ),
+    padLine(
+      `   ${c.emerald}➜${c.reset}  ${c.bold}${c.white}Mode${c.reset}      ${
+        isProd
+          ? `${c.magenta}Production (Static Bundle)${c.reset}`
+          : `${c.mint}Development (Express + Vite HMR)${c.reset}`
+      }`,
+    ),
+    emptyLine,
+    `  ${c.teal}├${line}┤${c.reset}`,
+    emptyLine,
+    padLine(`   ${c.gray}${c.bold}SERVICES${c.reset}`),
+    padLine(
+      `   ${c.gray}Gemini AI${c.reset}      ${statusBadge(hasGemini, "Connected", "Fallback Mode (No Key)")}`,
+    ),
+    padLine(
+      `   ${c.gray}Google Maps${c.reset}    ${statusBadge(hasMaps, "Connected (Places New)", "Not Configured")}`,
+    ),
+    padLine(
+      `   ${c.gray}Wilayah Proxy${c.reset}  ${c.cyan}●${c.reset}  ${c.white}Active (wilayah.id)${c.reset}`,
+    ),
+    emptyLine,
+    `  ${c.teal}╰${line}╯${c.reset}`,
+    "",
+  ];
+
+  console.log(rows.join("\n"));
+  logger.success(
+    "READY",
+    `Server aktif dan siap melayani request. ${c.gray}(Ctrl+C untuk berhenti)${c.reset}`,
+  );
+  console.log("");
+}
 
 let aiClient: GoogleGenAI | null = null;
 
@@ -38,7 +193,7 @@ function getAiClient(): GoogleGenAI | null {
       try {
         aiClient = new GoogleGenAI({ apiKey: key });
       } catch (err) {
-        console.error("Failed to initialize GoogleGenAI:", err);
+        logger.error("GEMINI", "Gagal menginisialisasi GoogleGenAI client", err);
         aiClient = null;
       }
     }
@@ -445,8 +600,10 @@ function generateFallbackPuskesmas(lat: number, lng: number) {
 }
 
 async function startServer() {
+  const bootStart = performance.now();
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+  const isProd = process.env.NODE_ENV === "production";
 
   const SITE_URL = "https://kindo.fun";
 
@@ -538,6 +695,50 @@ async function startServer() {
 
   app.use(express.json());
 
+  // ── Pretty HTTP request logger (hanya untuk API & SEO endpoints) ────────────
+  app.use((req, res, next) => {
+    const shouldLog =
+      req.path.startsWith("/api/") ||
+      req.path === "/sitemap.xml" ||
+      req.path === "/robots.txt";
+    if (!shouldLog) return next();
+
+    const start = performance.now();
+    res.on("finish", () => {
+      const durationMs = Math.round(performance.now() - start);
+      const methodColor =
+        req.method === "GET"
+          ? c.cyan
+          : req.method === "POST"
+            ? c.emerald
+            : req.method === "PUT" || req.method === "PATCH"
+              ? c.amber
+              : c.red;
+      const statusColor =
+        res.statusCode >= 500
+          ? c.red
+          : res.statusCode >= 400
+            ? c.amber
+            : res.statusCode >= 300
+              ? c.cyan
+              : c.green;
+      const timeColor =
+        durationMs >= 1500 ? c.red : durationMs >= 400 ? c.amber : c.gray;
+      const durationStr =
+        durationMs >= 1000
+          ? `${(durationMs / 1000).toFixed(2)}s`
+          : `${durationMs}ms`;
+      const sourceTag = res.locals.logSource
+        ? `  ${c.gray}• ${c.mint}${res.locals.logSource}${c.reset}`
+        : "";
+
+      console.log(
+        `  ${c.gray}${formatTime()}${c.reset}  ${methodColor}${c.bold}${req.method.padEnd(6)}${c.reset}  ${c.white}${req.originalUrl.padEnd(32)}${c.reset}  ${statusColor}${c.bold}${res.statusCode}${c.reset}  ${timeColor}${durationStr.padStart(6)}${c.reset}${sourceTag}`,
+      );
+    });
+    next();
+  });
+
   // API routes FIRST
   app.post("/api/analyze-questionnaire", async (req, res) => {
     try {
@@ -565,11 +766,13 @@ Berikan respons akhir Anda dalam format JSON (bukan markdown block) dengan prope
       const ai = getAiClient();
 
       if (!ai) {
-        console.info(
-          "Gemini API Key is not configured. Seamlessly using local rule-based clinical analysis.",
+        logger.warn(
+          "GEMINI",
+          "API Key belum diatur — menggunakan analisis klinis lokal (fallback).",
         );
         parsedResponse = getFallbackAnalysis(ageCategory, totalScore, qna);
         isFallback = true;
+        res.locals.logSource = "Local Fallback";
       } else {
         try {
           const response = await ai.models.generateContent({
@@ -581,18 +784,21 @@ Berikan respons akhir Anda dalam format JSON (bukan markdown block) dengan prope
           });
           parsedResponse = JSON.parse(response.text || "{}");
           isFallback = false;
+          res.locals.logSource = "Gemini AI";
         } catch (geminiError: any) {
           const reason =
             geminiError?.status === 429 ||
             geminiError?.message?.includes("429") ||
             geminiError?.message?.includes("credits")
-              ? "API quota / prepayment credits depleted"
+              ? "Kuota API / kredit habis"
               : geminiError?.message?.slice(0, 80) || "Service unavailable";
-          console.info(
-            `Gemini analysis status [${reason}]. Active: high-quality local rule-based clinical fallback.`,
+          logger.warn(
+            "GEMINI",
+            `Analisis fallback aktif (${reason}).`,
           );
           parsedResponse = getFallbackAnalysis(ageCategory, totalScore, qna);
           isFallback = true;
+          res.locals.logSource = "Local Fallback";
         }
       }
 
@@ -602,7 +808,7 @@ Berikan respons akhir Anda dalam format JSON (bukan markdown block) dengan prope
         isFallback,
       });
     } catch (error) {
-      console.error("Error generating analysis:", error);
+      logger.error("API", "Gagal membuat analisis kuesioner", error);
       res.status(500).json({ error: "Failed to generate analysis" });
     }
   });
@@ -623,6 +829,7 @@ ${text}`;
       if (!ai) {
         translatedText = text;
         isFallback = true;
+        res.locals.logSource = "Passthrough";
       } else {
         try {
           const response = await ai.models.generateContent({
@@ -631,18 +838,21 @@ ${text}`;
           });
           translatedText = response.text;
           isFallback = false;
+          res.locals.logSource = "Gemini AI";
         } catch (geminiError: any) {
-          console.info(
-            "Gemini translation unavailable, using original text as fallback.",
+          logger.warn(
+            "GEMINI",
+            "Terjemahan tidak tersedia — menggunakan teks asli.",
           );
           translatedText = text;
           isFallback = true;
+          res.locals.logSource = "Fallback";
         }
       }
 
       res.json({ translatedText, isFallback });
     } catch (error) {
-      console.error("Error translating text:", error);
+      logger.error("API", "Gagal menerjemahkan teks analisis", error);
       res.status(500).json({ error: "Failed to translate" });
     }
   });
@@ -654,6 +864,7 @@ ${text}`;
       // ── Strategi 0: Kembalikan dari cache jika ada (instan) ───────────────────
       const cached = getCachedPuskesmas(lat, lng);
       if (cached) {
+        res.locals.logSource = "Cache Hit";
         return res.json({
           result: cached.result,
           isFallback: cached.isFallback,
@@ -661,53 +872,94 @@ ${text}`;
         });
       }
 
-      // ── Strategi 1: Google Places Nearby Search API (cepat ~1-3 detik) ────────
+      // ── Strategi 1: Google Places API (New) — Text Search (cepat ~1-3 detik) ──
+      // Migrasi dari legacy /maps/api/place/nearbysearch/json (keyword=puskesmas)
+      // ke Places API (New) places:searchText dengan header wajib X-Goog-FieldMask.
       const mapsKey =
         process.env.GOOGLE_MAPS_PLATFORM_KEY ||
         process.env.VITE_GOOGLE_MAPS_PLATFORM_KEY;
       if (mapsKey && mapsKey.trim().length > 0) {
         try {
-          const radius = 5000; // 5 km radius
-          const placesUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${radius}&keyword=puskesmas&language=id&key=${mapsKey}`;
+          const radius = 5000.0; // 5 km radius
+          const placesUrl = "https://places.googleapis.com/v1/places:searchText";
+          const fieldMask = [
+            "places.displayName",
+            "places.formattedAddress",
+            "places.location",
+            "places.nationalPhoneNumber",
+          ].join(",");
 
           const placesRes = await fetch(placesUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Goog-Api-Key": mapsKey.trim(),
+              "X-Goog-FieldMask": fieldMask,
+            },
+            body: JSON.stringify({
+              textQuery: "puskesmas",
+              languageCode: "id",
+              maxResultCount: 5,
+              rankPreference: "DISTANCE",
+              locationBias: {
+                circle: {
+                  center: {
+                    latitude: Number(lat),
+                    longitude: Number(lng),
+                  },
+                  radius,
+                },
+              },
+            }),
             signal: AbortSignal.timeout(8000),
           });
-          if (placesRes.ok) {
-            const placesData = await placesRes.json();
-            if (placesData.status === "OK" && placesData.results?.length > 0) {
-              const puskesmas = placesData.results
-                .slice(0, 5)
-                .map((place: any) => {
-                  const pLat = place.geometry?.location?.lat ?? lat;
-                  const pLng = place.geometry?.location?.lng ?? lng;
-                  const dist = calculateDistance(lat, lng, pLat, pLng);
-                  return {
-                    name: place.name,
-                    address: place.vicinity || place.formatted_address || "-",
-                    distance: `${dist.toFixed(1)} km`,
-                    phone: place.formatted_phone_number || "-",
-                    lat: pLat,
-                    lng: pLng,
-                  };
-                })
-                .sort(
-                  (a: any, b: any) =>
-                    parseFloat(a.distance) - parseFloat(b.distance),
-                );
 
-              const finalResult = { puskesmas };
-              setCachedPuskesmas(lat, lng, {
-                result: finalResult,
-                isFallback: false,
-              });
-              return res.json({ result: finalResult, isFallback: false });
-            }
+          const placesData = await placesRes.json().catch(() => ({}));
+          if (
+            placesRes.ok &&
+            Array.isArray(placesData.places) &&
+            placesData.places.length > 0
+          ) {
+            const puskesmas = placesData.places
+              .slice(0, 5)
+              .map((place: any) => {
+                const pLat = place.location?.latitude ?? lat;
+                const pLng = place.location?.longitude ?? lng;
+                const dist = calculateDistance(lat, lng, pLat, pLng);
+                return {
+                  name: place.displayName?.text || "Puskesmas",
+                  address: place.formattedAddress || "-",
+                  distance: `${dist.toFixed(1)} km`,
+                  phone: place.nationalPhoneNumber || "-",
+                  lat: pLat,
+                  lng: pLng,
+                };
+              })
+              .sort(
+                (a: any, b: any) =>
+                  parseFloat(a.distance) - parseFloat(b.distance),
+              );
+
+            const finalResult = { puskesmas };
+            setCachedPuskesmas(lat, lng, {
+              result: finalResult,
+              isFallback: false,
+            });
+            res.locals.logSource = "Places API (New)";
+            return res.json({ result: finalResult, isFallback: false });
+          } else if (!placesRes.ok) {
+            const errStatus =
+              placesData?.error?.status || `HTTP ${placesRes.status}`;
+            const errMsg = placesData?.error?.message || placesRes.statusText;
+            logger.warn(
+              "PLACES",
+              `Places API (New) error: ${errStatus}${errMsg ? ` (${errMsg})` : ""}`,
+            );
           }
         } catch (placesError: any) {
-          console.info(
-            "Google Places API unavailable, falling back to Gemini:",
-            placesError?.message,
+          logger.warn(
+            "PLACES",
+            `Places API (New) tidak tersedia, beralih ke Gemini (${placesError?.message || "timeout"}).`,
           );
         }
       }
@@ -739,12 +991,13 @@ Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format pers
               result: parsedResult,
               isFallback: false,
             });
+            res.locals.logSource = "Gemini AI";
             return res.json({ result: parsedResult, isFallback: false });
           }
         } catch (geminiError: any) {
-          console.info(
-            "Gemini Puskesmas search unavailable, using geographical fallback:",
-            geminiError?.message,
+          logger.warn(
+            "GEMINI",
+            `Pencarian puskesmas Gemini gagal, beralih ke fallback lokal (${geminiError?.message || "error"}).`,
           );
         }
       }
@@ -752,9 +1005,10 @@ Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format pers
       // ── Strategi 3: Fallback lokal berbasis koordinat (instan) ───────────────
       const parsedResult = { puskesmas: generateFallbackPuskesmas(lat, lng) };
       setCachedPuskesmas(lat, lng, { result: parsedResult, isFallback: true });
+      res.locals.logSource = "Local Fallback";
       return res.json({ result: parsedResult, isFallback: true });
     } catch (error: any) {
-      console.error("Error finding puskesmas:", error);
+      logger.error("API", "Gagal mencari puskesmas terdekat", error);
       res.status(500).json({
         error: "Gagal menghubungi faskes terdekat. Silakan coba lagi nanti.",
         details: error?.message || "Unknown error",
@@ -764,18 +1018,20 @@ Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format pers
 
   app.get("/api/wilayah/provinces", async (req, res) => {
     try {
+      res.locals.logSource = "wilayah.id";
       const response = await fetch("https://wilayah.id/api/provinces.json");
       if (!response.ok) throw new Error("Failed to fetch provinces");
       const data = await response.json();
       res.json(data);
     } catch (error) {
-      console.error(error);
+      logger.error("WILAYAH", "Gagal mengambil daftar provinsi", error);
       res.status(500).json({ error: "Failed to fetch provinces" });
     }
   });
 
   app.get("/api/wilayah/regencies/:provinceId", async (req, res) => {
     try {
+      res.locals.logSource = "wilayah.id";
       const response = await fetch(
         `https://wilayah.id/api/regencies/${req.params.provinceId}.json`,
       );
@@ -783,13 +1039,14 @@ Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format pers
       const data = await response.json();
       res.json(data);
     } catch (error) {
-      console.error(error);
+      logger.error("WILAYAH", "Gagal mengambil daftar kabupaten/kota", error);
       res.status(500).json({ error: "Failed to fetch regencies" });
     }
   });
 
   app.get("/api/wilayah/districts/:regencyId", async (req, res) => {
     try {
+      res.locals.logSource = "wilayah.id";
       const response = await fetch(
         `https://wilayah.id/api/districts/${req.params.regencyId}.json`,
       );
@@ -797,13 +1054,14 @@ Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format pers
       const data = await response.json();
       res.json(data);
     } catch (error) {
-      console.error(error);
+      logger.error("WILAYAH", "Gagal mengambil daftar kecamatan", error);
       res.status(500).json({ error: "Failed to fetch districts" });
     }
   });
 
   app.get("/api/wilayah/villages/:districtId", async (req, res) => {
     try {
+      res.locals.logSource = "wilayah.id";
       const response = await fetch(
         `https://wilayah.id/api/villages/${req.params.districtId}.json`,
       );
@@ -811,18 +1069,19 @@ Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format pers
       const data = await response.json();
       res.json(data);
     } catch (error) {
-      console.error(error);
+      logger.error("WILAYAH", "Gagal mengambil daftar kelurahan/desa", error);
       res.status(500).json({ error: "Failed to fetch villages" });
     }
   });
 
   // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
+  let viteServer: Awaited<ReturnType<typeof createViteServer>> | null = null;
+  if (!isProd) {
+    viteServer = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
-    app.use(vite.middlewares);
+    app.use(viteServer.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
@@ -831,9 +1090,27 @@ Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format pers
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  const server = app.listen(PORT, "0.0.0.0", () => {
+    const bootMs = Math.round(performance.now() - bootStart);
+    printStartupBanner(PORT, bootMs, isProd);
   });
+
+  const shutdown = async (signal: string) => {
+    console.log("");
+    logger.warn("STOP", `Menerima sinyal ${signal} — menutup server Kindo...`);
+    const forceTimer = setTimeout(() => process.exit(0), 1500);
+    forceTimer.unref();
+    if (viteServer) {
+      await viteServer.close().catch(() => {});
+    }
+    server.close(() => {
+      logger.info("EXIT", "Server berhasil dihentikan dengan aman.");
+      process.exit(0);
+    });
+  };
+
+  process.once("SIGINT", () => shutdown("SIGINT"));
+  process.once("SIGTERM", () => shutdown("SIGTERM"));
 }
 
 startServer();

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, MapPin, Map as MapIcon, Loader2, Sparkles, Navigation, Phone } from 'lucide-react';
-import { APIProvider, Map, AdvancedMarker, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, AdvancedMarker, useMap, useMapsLibrary, type MapMouseEvent } from '@vis.gl/react-google-maps';
 
 const API_KEY = process.env.GOOGLE_MAPS_PLATFORM_KEY || '';
 
@@ -105,37 +105,119 @@ export default function PuskesmasMapModal({ isOpen, onClose }: PuskesmasMapModal
     };
   }, [isOpen, onClose]);
 
-  const [isUsingDefaultJakarta, setIsUsingDefaultJakarta] = useState(false);
+  const [locationSource, setLocationSource] = useState<'gps' | 'ip' | 'manual' | 'default' | null>(null);
+  const [detectedCity, setDetectedCity] = useState<string | null>(null);
+  const locationReqIdRef = useRef(0);
+  const geoTimerRef = useRef<number | null>(null);
+
+  const clearGeoTimer = () => {
+    if (geoTimerRef.current !== null) {
+      window.clearTimeout(geoTimerRef.current);
+      geoTimerRef.current = null;
+    }
+  };
+
+  const applyLocation = (
+    loc: google.maps.LatLngLiteral,
+    source: 'gps' | 'ip' | 'manual' | 'default',
+    city?: string | null,
+  ) => {
+    setUserLocation(loc);
+    setMapCenter(loc);
+    setLocationError(null);
+    setLocationSource(source);
+    setDetectedCity(city || null);
+    fetchNearbyPuskesmas(loc);
+  };
+
+  const fallbackWithIpOrJakarta = async (reqId: number) => {
+    const defaultLoc = { lat: -6.2088, lng: 106.8456 };
+    try {
+      const controller = new AbortController();
+      const ipTimer = window.setTimeout(() => controller.abort(), 3500);
+      const res = await fetch('https://get.geojs.io/v1/ip/geo.json', {
+        signal: controller.signal,
+      });
+      window.clearTimeout(ipTimer);
+
+      if (reqId !== locationReqIdRef.current) return;
+
+      if (res.ok) {
+        const data = await res.json();
+        const lat = parseFloat(data.latitude);
+        const lng = parseFloat(data.longitude);
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          applyLocation({ lat, lng }, 'ip', data.city || data.region || null);
+          return;
+        }
+      }
+    } catch (ipErr) {
+      console.warn('IP geolocation fallback unavailable:', ipErr);
+    }
+
+    if (reqId !== locationReqIdRef.current) return;
+    applyLocation(defaultLoc, 'default', null);
+  };
 
   const requestLocation = () => {
+    clearGeoTimer();
+    const reqId = ++locationReqIdRef.current;
     setLocationError(null);
-    setIsUsingDefaultJakarta(false);
+    setLocationSource(null);
+    setDetectedCity(null);
+    setUserLocation(null);
+
     if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const loc = { lat: position.coords.latitude, lng: position.coords.longitude };
-          setUserLocation(loc);
-          setMapCenter(loc);
-          setLocationError(null);
-          setIsUsingDefaultJakarta(false);
-          fetchNearbyPuskesmas(loc);
-        },
-        (error) => {
-          console.warn("Geolocation denied or unavailable:", error);
-          const defaultLoc = { lat: -6.2088, lng: 106.8456 };
-          setUserLocation(defaultLoc);
-          setMapCenter(defaultLoc);
-          setIsUsingDefaultJakarta(true);
-          fetchNearbyPuskesmas(defaultLoc);
-        }
-      );
+      let settled = false;
+
+      const handleFailure = (reason?: unknown) => {
+        if (settled || reqId !== locationReqIdRef.current) return;
+        settled = true;
+        clearGeoTimer();
+        console.warn('Geolocation denied, unavailable, or timed out:', reason);
+        fallbackWithIpOrJakarta(reqId);
+      };
+
+      // Hard failsafe timer because desktop Chromium forks can hang forever on getCurrentPosition
+      geoTimerRef.current = window.setTimeout(() => {
+        handleFailure('Browser geolocation timeout (failsafe)');
+      }, 6500);
+
+      try {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            if (settled || reqId !== locationReqIdRef.current) return;
+            settled = true;
+            clearGeoTimer();
+            const loc = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+            applyLocation(loc, 'gps', null);
+          },
+          (error) => {
+            handleFailure(error);
+          },
+          {
+            enableHighAccuracy: false,
+            timeout: 6000,
+            maximumAge: 300000,
+          },
+        );
+      } catch (err) {
+        handleFailure(err);
+      }
     } else {
-      const defaultLoc = { lat: -6.2088, lng: 106.8456 };
-      setUserLocation(defaultLoc);
-      setMapCenter(defaultLoc);
-      setIsUsingDefaultJakarta(true);
-      fetchNearbyPuskesmas(defaultLoc);
+      fallbackWithIpOrJakarta(reqId);
     }
+  };
+
+  const handleMapClick = (event: MapMouseEvent) => {
+    const clicked = event.detail?.latLng;
+    if (!clicked) return;
+    clearGeoTimer();
+    locationReqIdRef.current += 1;
+    applyLocation({ lat: clicked.lat, lng: clicked.lng }, 'manual', null);
   };
 
   const fetchNearbyPuskesmas = async (loc: google.maps.LatLngLiteral) => {
@@ -175,7 +257,13 @@ export default function PuskesmasMapModal({ isOpen, onClose }: PuskesmasMapModal
   useEffect(() => {
     if (isOpen) {
       requestLocation();
+    } else {
+      clearGeoTimer();
+      locationReqIdRef.current += 1;
     }
+    return () => {
+      clearGeoTimer();
+    };
   }, [isOpen]);
 
   if (!mounted) return null;
@@ -242,9 +330,23 @@ export default function PuskesmasMapModal({ isOpen, onClose }: PuskesmasMapModal
                     </div>
                   </div>
                 ) : !userLocation ? (
-                  <div className="p-8 flex flex-col items-center justify-center text-slate-500 gap-3 h-full">
+                  <div className="p-8 flex flex-col items-center justify-center text-slate-500 gap-3 h-full text-center">
                     <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
                     <span className="text-sm font-medium">Mencari lokasi Anda...</span>
+                    <span className="text-xs text-slate-400 max-w-[240px]">
+                      Anda juga dapat langsung mengklik titik lokasi Anda pada peta di samping.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clearGeoTimer();
+                        const reqId = ++locationReqIdRef.current;
+                        fallbackWithIpOrJakarta(reqId);
+                      }}
+                      className="mt-1 px-3.5 py-1.5 text-xs font-semibold text-[#0F766E] dark:text-[#5EEAD4] bg-teal-50 dark:bg-teal-950/50 hover:bg-teal-100 dark:hover:bg-teal-900/50 rounded-lg transition-colors cursor-pointer"
+                    >
+                      Gunakan Perkiraan Lokasi
+                    </button>
                   </div>
                 ) : loadingAi ? (
                   <div className="p-8 flex flex-col items-center justify-center text-slate-500 gap-4 h-full">
@@ -266,19 +368,51 @@ export default function PuskesmasMapModal({ isOpen, onClose }: PuskesmasMapModal
                   </div>
                 ) : aiResult ? (
                   <div className="p-4 sm:p-6 flex flex-col h-full">
-                    {/* Location Fallback Warning Banner per Design System 4.7 */}
-                    {isUsingDefaultJakarta && (
+                    {/* Location Fallback / Hint Banner */}
+                    {locationSource === 'default' && (
                       <div className="mb-3 p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs text-[#B45309] dark:text-amber-300 flex items-start justify-between gap-2">
                         <div className="flex items-start gap-2">
                           <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-[#B45309]" />
-                          <span><strong>Lokasi tidak terdeteksi.</strong> Hasil puskesmas ditampilkan untuk wilayah Jakarta.</span>
+                          <span><strong>Lokasi GPS tidak merespons.</strong> Menampilkan wilayah Jakarta. Klik titik di peta untuk memilih lokasi Anda.</span>
                         </div>
                         <button
                           type="button"
                           onClick={requestLocation}
-                          className="text-[11px] font-bold text-[#0F766E] dark:text-[#5EEAD4] hover:underline shrink-0"
+                          className="text-[11px] font-bold text-[#0F766E] dark:text-[#5EEAD4] hover:underline shrink-0 cursor-pointer"
                         >
                           Coba Lagi
+                        </button>
+                      </div>
+                    )}
+                    {locationSource === 'ip' && (
+                      <div className="mb-3 p-3 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 rounded-xl text-xs text-[#0F766E] dark:text-teal-300 flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-2">
+                          <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-[#0F766E] dark:text-teal-400" />
+                          <span>
+                            Lokasi diperkirakan dari jaringan internet{detectedCity ? ` (${detectedCity})` : ''}. Klik titik pada peta untuk akurasi lebih tepat.
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={requestLocation}
+                          className="text-[11px] font-bold text-[#0F766E] dark:text-[#5EEAD4] hover:underline shrink-0 cursor-pointer"
+                        >
+                          Deteksi GPS
+                        </button>
+                      </div>
+                    )}
+                    {locationSource === 'manual' && (
+                      <div className="mb-3 p-2.5 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-xl text-xs text-emerald-700 dark:text-emerald-300 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                          <span>Menampilkan puskesmas di sekitar titik yang Anda pilih di peta.</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={requestLocation}
+                          className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:underline shrink-0 cursor-pointer"
+                        >
+                          Reset GPS
                         </button>
                       </div>
                     )}
@@ -344,11 +478,12 @@ export default function PuskesmasMapModal({ isOpen, onClose }: PuskesmasMapModal
                   <APIProvider apiKey={API_KEY} version="weekly">
                     <Map
                       defaultCenter={{ lat: -6.2088, lng: 106.8456 }} // Default Jakarta
-                      zoom={14}
+                      defaultZoom={14}
                       mapId="PUSKESMAS_MAP_ID"
                       internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
                       style={{width: '100%', height: '100%'}}
                       gestureHandling="greedy"
+                      onClick={handleMapClick}
                     >
                       <MapUpdater center={mapCenter} />
                       {userLocation && (
