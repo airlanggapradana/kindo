@@ -3,7 +3,7 @@ dotenv.config({ quiet: true });
 import express from "express";
 import os from "os";
 import path from "path";
-import { createServer as createViteServer } from "vite";
+import type { ViteDevServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import { INTERVENSI_KNOWLEDGE } from "./src/data/knowledge.ts";
 
@@ -1075,8 +1075,9 @@ Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format pers
   });
 
   // Vite middleware for development
-  let viteServer: Awaited<ReturnType<typeof createViteServer>> | null = null;
+  let viteServer: ViteDevServer | null = null;
   if (!isProd) {
+    const { createServer: createViteServer } = await import("vite");
     viteServer = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -1085,7 +1086,9 @@ Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format pers
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
-    app.get("*", (req, res) => {
+    app.use((req, res, next) => {
+      if (req.method !== "GET" && req.method !== "HEAD") return next();
+      if (req.path.startsWith("/api/")) return next();
       res.sendFile(path.join(distPath, "index.html"));
     });
   }
@@ -1113,4 +1116,7 @@ Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format pers
   process.once("SIGTERM", () => shutdown("SIGTERM"));
 }
 
-startServer();
+startServer().catch((err) => {
+  logger.error("BOOT", "Gagal menjalankan server Kindo", err);
+  process.exit(1);
+});
