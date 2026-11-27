@@ -199,39 +199,42 @@ flowchart LR
 ## 📂 Struktur Direktori
 
 ```text
-growthsync/
-├── public/                       # Aset publik statis (logo, foto tim pengembang)
-│   ├── team/                     # Foto profil kontributor
-│   └── Resmi_Logo_UMS_Color.png  # Logo resmi Universitas Muhammadiyah Surakarta
+kindo/
+├── archive/                      # Skrip sekali pakai dan patch historis
+│   ├── scripts/
+│   └── patches/
+├── data/kpsp/                    # Bahan sumber dan hasil ekstraksi KPSP
+│   ├── source/                   # Spreadsheet per usia dan snapshot sumber
+│   └── extracted/                # Hasil ekstraksi JSON dan teks
+├── docs/                         # Dokumentasi dan referensi pengembangan
+│   ├── overview.md
+│   ├── firebase-blueprint.json
+│   ├── design/                   # Draf desain dan gambar referensi
+│   └── references/               # Referensi intervensi kuesioner
+├── public/                       # Aset yang disajikan langsung ke pengguna
+│   ├── illustrations/            # Ilustrasi soal KPSP
+│   └── team/                     # Foto tim pengembang
+├── scripts/                      # Utilitas pemeliharaan proyek
 ├── src/
-│   ├── components/               # Modul dan Tampilan Antarmuka
-│   │   ├── AdminDashboardView.tsx    # Dashboard admin (verifikasi nakes & metrik)
-│   │   ├── AuthView.tsx              # Autentikasi (login & register bertingkat wilayah)
-│   │   ├── ChildOnboardingView.tsx   # Form registrasi data awal balita
-│   │   ├── DashboardView.tsx         # Dashboard orang tua, grafik tumbuh & riwayat KPSP
-│   │   ├── KonsultasiNakesView.tsx   # Ruang obrolan telekonsultasi nakes-orang tua
-│   │   ├── LandingView.tsx           # Halaman pembuka interaktif dengan kanvas 3D
-│   │   ├── NakesDashboardView.tsx    # Dashboard tenaga medis & klaim pasien
-│   │   ├── ParentChatList.tsx        # Direktori nakes untuk konsultasi
-│   │   ├── PuskesmasMapModal.tsx     # Modal peta geolokasi Puskesmas & rute
-│   │   └── ThreeBackground.tsx       # Visual latar belakang 3D Three.js
-│   ├── contexts/
-│   │   └── LanguageContext.tsx       # Context state bahasa bilingual (ID / EN)
-│   ├── data/
-│   │   ├── knowledge.ts              # Basis pengetahuan klinis intervensi Kemenkes RI
-│   │   ├── questions.ts              # Bank soal KPSP resmi usia 3 - 72 bulan
-│   │   └── translations_en.ts        # File translasi kamus Bahasa Inggris
-│   ├── lib/
-│   │   ├── firebase.ts               # Inisialisasi Firebase App, Auth, dan Firestore
-│   │   └── utils.ts                  # Helper utilities styling (clsx & tailwind-merge)
-│   ├── App.tsx                       # Root routing, layout sidebar, dan role handling
-│   ├── types.ts                      # Definisi skema dan tipe TypeScript global
-│   └── main.tsx                      # Entry point React
-├── server.ts                     # BFF Express Server (Gemini AI, Routes, Wilayah Proxy)
-├── firestore.rules               # Aturan keamanan database Cloud Firestore
-├── firebase-applet-config.json   # Konfigurasi proyek Firebase
-└── package.json                  # Dependensi proyek
+│   ├── components/               # Tampilan dan komponen antarmuka
+│   ├── contexts/                 # Context React
+│   ├── data/                     # Data yang diimpor aplikasi
+│   ├── lib/                      # Integrasi Firebase, SEO, dan helper
+│   ├── utils/                    # Utilitas aplikasi
+│   ├── App.tsx                   # Routing dan layout utama
+│   └── main.tsx                  # Entry point React
+├── server.ts                     # Server Express dan API
+├── firestore.rules               # Aturan keamanan Cloud Firestore
+├── firebase-applet-config.json   # Konfigurasi Firebase yang diimpor aplikasi
+├── metadata.json                 # Metadata integrasi AI Studio
+├── vite.config.ts                # Konfigurasi build frontend
+├── tsconfig.json                 # Konfigurasi TypeScript
+└── package.json                  # Dependensi dan perintah proyek
 ```
+
+Panduan penempatan file ada di [docs/repository.md](docs/repository.md).
+Data di `data/kpsp/` adalah bahan referensi; aplikasi memakai modul di `src/data/`.
+Skrip dalam `archive/` disimpan sebagai riwayat perubahan dan dapat menimpa kode jika dijalankan ulang.
 
 ---
 
@@ -239,7 +242,7 @@ growthsync/
 
 ### 1. Prasyarat Sistem
 
-- **Node.js** versi `v18.0.0` atau lebih tinggi
+- **Node.js** versi `v24.12.0` atau lebih tinggi (sesuai kebutuhan dependensi Firebase)
 - Package manager: `npm` atau `pnpm`
 - Akun **Google AI Studio** (untuk API Key Gemini)
 - Akun **Google Cloud Platform** (untuk Google Maps Platform API Key)
@@ -247,8 +250,8 @@ growthsync/
 ### 2. Kloning Repositori
 
 ```bash
-git clone https://github.com/username-anda/growthsync.git
-cd growthsync
+git clone https://github.com/airlanggapradana/kindo.git
+cd kindo
 ```
 
 ### 3. Instalasi Dependensi

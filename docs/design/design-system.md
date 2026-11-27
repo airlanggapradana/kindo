@@ -1,7 +1,7 @@
 # Design System: GrowthSync (KINDO)
 
 > **Status**: DRAFT v0.2. Keputusan desain sudah dicentang; 3 item peninjauan klinis (Bagian 14) masih menunggu Nakes. Perubahan v0.2: perbaikan 8 pasangan warna yang gagal kontras (Bagian 2).
-> **Acuan**: `Overview.md` (arsitektur, peran, alur kerja).
+> **Acuan**: [Overview aplikasi](../overview.md) (arsitektur, peran, alur kerja).
 > **Catatan**: Sama seperti Overview, file ini tidak untuk di-commit ke repositori Git.
 > **Stack target**: React 19, TypeScript, Vite 6, Tailwind CSS v4, `motion/react`, Recharts, Three.js.
 

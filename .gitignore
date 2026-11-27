@@ -1,9 +1,23 @@
+# Dependencies and generated output
 node_modules/
 build/
 dist/
 coverage/
-.DS_Store
-*.log
+*.tsbuildinfo
+
+# Local configuration and secrets
 .env*
 !.env.example
+.local/
 SEO_Task.md
+
+# Temporary files and development logs
+*.log
+tmp_*.txt
+*.tmp
+*.bak
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
