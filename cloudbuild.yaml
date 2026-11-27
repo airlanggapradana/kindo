@@ -1,0 +1,55 @@
+# Google Cloud Build configuration for deploying Kindo directly to Cloud Run.
+#
+# Configure these substitution variables on your Cloud Build trigger:
+#   _SERVICE_NAME                  : Existing Cloud Run service name
+#   _REGION                        : Cloud Run & Artifact Registry region (e.g. asia-southeast2, us-west1)
+#   _AR_REPO                       : Artifact Registry Docker repository (default: cloud-run-source-deploy)
+#   _VITE_GOOGLE_MAPS_BROWSER_KEY  : Public browser-restricted Maps JS API key (baked at Vite build time)
+#   _VITE_GOOGLE_MAP_ID            : Optional Google Maps Map ID
+#
+# Runtime secrets (GEMINI_API_KEY, GOOGLE_PLACES_SERVER_KEY, DATABASE_URL, etc.)
+# remain managed in Cloud Run Variables & Secrets and are preserved across deploys.
+
+substitutions:
+  _SERVICE_NAME: kindo
+  _REGION: asia-southeast2
+  _AR_REPO: cloud-run-source-deploy
+  _VITE_GOOGLE_MAPS_BROWSER_KEY: ""
+  _VITE_GOOGLE_MAP_ID: ""
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --build-arg
+      - VITE_GOOGLE_MAPS_BROWSER_KEY=${_VITE_GOOGLE_MAPS_BROWSER_KEY}
+      - --build-arg
+      - VITE_GOOGLE_MAP_ID=${_VITE_GOOGLE_MAP_ID}
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${BUILD_ID}
+      - .
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${BUILD_ID}
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${BUILD_ID}
+      - --region=${_REGION}
+      - --platform=managed
+      - --quiet
+
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${BUILD_ID}
+
+options:
+  logging: CLOUD_LOGGING_ONLY

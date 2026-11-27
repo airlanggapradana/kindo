@@ -1,0 +1,38 @@
+# Dependencies & generated output
+node_modules
+dist
+build
+coverage
+*.tsbuildinfo
+
+# Local environment & secrets (never bake into the container image)
+.env
+.env.*
+!.env.example
+.local
+
+# Version control & OS metadata
+.git
+.gitignore
+.gitattributes
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs & temporary files
+*.log
+tmp_*.txt
+*.tmp
+*.bak
+
+# Files not needed for building or running the container
+# Note: app_knowledge/ and data/kpsp/source/ ARE required by `npm run knowledge:build`
+archive
+docs
+tests
+db
+compose.yaml
+cloudbuild.yaml
+data/kpsp/extracted
+README.md
+SEO_Task.md

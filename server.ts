@@ -481,6 +481,9 @@ ${recs.enNext || nextStepsEn}
 async function startServer() {
   const bootStart = performance.now();
   const app = express();
+  // Trust the single proxy hop in front of Express (Google Cloud Run / GFE)
+  // so req.ip and req.hostname reflect the real client request.
+  app.set("trust proxy", 1);
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
   const isProd = process.env.NODE_ENV === "production";
 
