@@ -7,3 +7,4 @@ coverage/
 .env*
 !.env.example
 SEO_Task.md
+tmp_*.txt
