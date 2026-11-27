@@ -1,0 +1,1642 @@
+{
+  "version": "81d9fcbc17f128aef76e76dc926764fccddaebcd0fd9ef3f99ea5766fe05d45b",
+  "bankHash": "e6b319c389c29ab96a3fcd8a9a03c0f4fc2082d90288f5d81c0da89106fff8b6",
+  "sourceHash": "128a1e527772a56030a8b9489940e8e5426aaadce1782b29453acb6a5270780d",
+  "documents": [
+    {
+      "id": "APP001",
+      "title": "Tentang KINDO",
+      "keywords": [
+        "apa itu kindo",
+        "aplikasi ini",
+        "fitur kindo",
+        "kindo buat apa"
+      ],
+      "answer": "KINDO membantu pemantauan tumbuh kembang anak melalui skrining KPSP, profil anak, pencatatan pertumbuhan, edukasi, riwayat hasil, laporan PDF, dan konsultasi nakes.",
+      "action": null
+    },
+    {
+      "id": "APP002",
+      "title": "Mengenal Rusdi",
+      "keywords": [
+        "siapa kamu",
+        "siapa rusdi",
+        "kamu dokter",
+        "halo",
+        "hai",
+        "rusdi"
+      ],
+      "answer": "Halo, aku Rusdi, asisten AI KINDO. Aku membantu menjelaskan fitur aplikasi. Kamu bisa bertanya tentang skrining, profil anak, hasil, PDF, puskesmas, atau konsultasi nakes.",
+      "action": null
+    },
+    {
+      "id": "APP006",
+      "title": "Aspek dalam skrining",
+      "keywords": [
+        "kategori",
+        "aspek",
+        "domain perkembangan",
+        "apa yang dinilai"
+      ],
+      "answer": "Bank soal KINDO mencakup Gerak Kasar, Gerak Halus, Bicara dan Bahasa, serta Sosialisasi dan Kemandirian. Pertanyaan mengikuti formulir usia yang dipilih.",
+      "action": "open_screening"
+    },
+    {
+      "id": "APP007",
+      "title": "Menambahkan profil anak",
+      "keywords": [
+        "tambah anak",
+        "menambahkan anak",
+        "profil anak",
+        "banyak anak",
+        "lebih dari satu anak"
+      ],
+      "answer": "Gunakan menu Tambah Anak, lalu isi nama, jenis kelamin, tanggal lahir, dan pengukuran tubuh melalui langkah yang tampil. Setelah tersimpan, pilih profil anak yang ingin dipantau di dashboard.",
+      "action": "open_onboarding"
+    },
+    {
+      "id": "APP008",
+      "title": "Memulai skrining KPSP",
+      "keywords": [
+        "mulai skrining",
+        "isi kuesioner",
+        "cara skrining",
+        "mengisi kpsp",
+        "buka skrining",
+        "jawab soal",
+        "cara kpsp",
+        "mulai kuesioner"
+      ],
+      "answer": "Pilih profil anak, lalu tekan Skrining atau Buat Skrining Baru di dashboard. Ikuti pilihan kelompok usia yang tampil, baca persiapan alat, lalu tekan Saya Siap, Mulai Skrining. Jawab YA atau TIDAK, periksa ringkasan, lalu kirim hasil. Pemilihan usia untuk kebutuhan klinis dapat dikonfirmasi kepada nakes.",
+      "action": "open_screening"
+    },
+    {
+      "id": "APP009",
+      "title": "Persiapan alat skrining",
+      "keywords": [
+        "alat",
+        "persiapan",
+        "siapkan apa",
+        "peralatan"
+      ],
+      "answer": "Buka formulir skrining dan baca halaman persiapan sebelum mulai. Daftar alat berbeda menurut kelompok usia. Ikuti daftar yang tampil di aplikasi dan jangan mengganti alat berdasarkan dugaan.",
+      "action": "open_screening"
+    },
+    {
+      "id": "APP010",
+      "title": "Label hasil di aplikasi",
+      "keywords": [
+        "arti skor",
+        "makna hasil",
+        "hasil meragukan",
+        "status sesuai",
+        "status penyimpangan",
+        "skor 7",
+        "skor 8",
+        "skor 9",
+        "skor 6"
+      ],
+      "answer": "KINDO menampilkan Sesuai untuk skor 9–10, Meragukan untuk 7–8, dan Kemungkinan Penyimpangan untuk 0–6. Ini penjelasan label aplikasi. Gunakan konsultasi nakes untuk membahas kondisi dan tindak lanjut anak; Rusdi tidak membuat diagnosis.",
+      "action": "open_consultation"
+    },
+    {
+      "id": "APP011",
+      "title": "Menyimpan dan melihat riwayat",
+      "keywords": [
+        "simpan hasil",
+        "riwayat",
+        "hasil sebelumnya",
+        "hasil tersimpan",
+        "lihat hasil"
+      ],
+      "answer": "Setelah hasil dan analisis tersedia, tekan Simpan Hasil. Buka hasil yang sudah tersimpan dari Riwayat Skrining pada dashboard profil anak. Mengunduh PDF dan menyimpan hasil ke riwayat merupakan dua tindakan terpisah.",
+      "action": "open_dashboard"
+    },
+    {
+      "id": "APP012",
+      "title": "Ekspor PDF dan CSV",
+      "keywords": [
+        "pdf",
+        "unduh",
+        "download",
+        "ekspor",
+        "export",
+        "cetak",
+        "laporan"
+      ],
+      "answer": "Gunakan Export PDF pada halaman hasil skrining atau detail riwayat untuk mengunduh laporan PDF. Tombol Export pada bagian pertumbuhan di dashboard mengunduh CSV. Pilih sesuai data yang kamu perlukan.",
+      "action": "open_dashboard"
+    },
+    {
+      "id": "APP013",
+      "title": "Konsultasi tenaga kesehatan",
+      "keywords": [
+        "konsultasi",
+        "hubungi nakes",
+        "tanya dokter",
+        "chat nakes",
+        "bidan",
+        "tenaga kesehatan"
+      ],
+      "answer": "Gunakan menu Konsultasi Nakes dan pilih kontak sesuai aturan pendampingan yang tampil. Percakapan tersebut dilakukan dengan tenaga kesehatan. Rusdi adalah asisten AI bantuan aplikasi dan percakapannya terpisah dari nakes.",
+      "action": "open_consultation"
+    },
+    {
+      "id": "APP014",
+      "title": "Mencari puskesmas",
+      "keywords": [
+        "puskesmas",
+        "lokasi",
+        "peta",
+        "faskes",
+        "fasilitas kesehatan",
+        "maps",
+        "gps"
+      ],
+      "answer": "Tekan Cari Puskesmas. Izinkan lokasi perangkat atau pilih titik maupun wilayah secara manual. Hasil diurutkan berdasarkan jarak garis lurus dari titik pencarian. Jika layanan belum tersedia, gunakan Buka Google Maps. Rusdi tidak membuat nama, alamat, atau koordinat fasilitas sendiri.",
+      "action": "open_puskesmas"
+    },
+    {
+      "id": "APP015",
+      "title": "Grafik dan pencatatan pertumbuhan",
+      "keywords": [
+        "grafik",
+        "pertumbuhan",
+        "berat badan",
+        "tinggi badan",
+        "lingkar kepala",
+        "input pengukuran"
+      ],
+      "answer": "Dashboard menampilkan riwayat berat badan, tinggi badan, dan lingkar kepala dari data yang dimasukkan. Gunakan Input / Edit untuk memperbarui pencatatan. Rusdi tidak menyimpulkan stunting atau diagnosis dari grafik; diskusikan pengukuran dengan nakes.",
+      "action": "open_dashboard"
+    },
+    {
+      "id": "APP016",
+      "title": "Edukasi dan menu Tugas",
+      "keywords": [
+        "edukasi",
+        "panduan edukasi",
+        "menu tugas",
+        "coming soon",
+        "tugas"
+      ],
+      "answer": "Buka menu Edukasi atau tombol Buka Panduan Edukasi di dashboard. Menu Tugas masih bertanda Coming Soon. Belum ada tanggal ketersediaan yang diterbitkan dalam panduan ini.",
+      "action": "open_education"
+    },
+    {
+      "id": "APP017",
+      "title": "Data pribadi dalam chat Rusdi",
+      "keywords": [
+        "data pribadi",
+        "hasil anak saya",
+        "data orang lain",
+        "rekam medis",
+        "data pasien",
+        "baca hasil anak"
+      ],
+      "answer": "Rusdi membantu menunjukkan cara memakai KINDO dan belum membaca rekam kesehatan pribadi melalui chat. Untuk melihat hasil milikmu, pilih profil anak dan riwayat pada dashboard. Data pengguna lain tidak menjadi knowledge Rusdi.",
+      "action": "open_dashboard"
+    },
+    {
+      "id": "APP018",
+      "title": "Masuk dan mendaftar",
+      "keywords": [
+        "login",
+        "masuk",
+        "daftar",
+        "registrasi",
+        "akun",
+        "kata sandi",
+        "password"
+      ],
+      "answer": "Gunakan halaman Masuk dengan email dan kata sandi akunmu. Untuk akun baru, pilih Daftar dan lengkapi data yang diminta. Akun nakes menunggu verifikasi sebelum dapat memakai fitur penugasan. Jangan kirim kata sandi atau kredensial lewat chat Rusdi.",
+      "action": null
+    },
+    {
+      "id": "APP019",
+      "title": "Bahasa dan tema tampilan",
+      "keywords": [
+        "bahasa",
+        "english",
+        "inggris",
+        "tema",
+        "mode gelap",
+        "dark mode",
+        "mode terang"
+      ],
+      "answer": "Gunakan pengaturan Bahasa untuk mengganti bahasa tampilan dan Mode Gelap atau Mode Terang untuk mengganti tema aplikasi. Rusdi versi awal memberikan panduan dalam Bahasa Indonesia.",
+      "action": null
+    }
+  ],
+  "forms": [
+    {
+      "ageMonths": 3,
+      "file": "3_bulan.xlsx",
+      "hash": "52da2466e5b542be68a5af657423b5a4b294ccddef2a1b3611f5f82ccad588bd",
+      "sheet": "Usia 3 Bulan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah kaki dan tangan bayi dapat bergerak bebas saat terlentang?",
+          "appText": "Apakah kaki dan tangan bayi dapat bergerak bebas saat terlentang?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Apakah bayi menatap wajah anda saat terjaga?",
+          "appText": "Apakah bayi menatap wajah anda saat terjaga?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Apakah bayi membalas senyum anda saat diajak tersenyum?",
+          "appText": "Apakah bayi membalas senyum anda saat diajak tersenyum?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah bayi dapat mengoceh sendiri?",
+          "appText": "Apakah bayi dapat mengoceh sendiri?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah bayi terkadang tertawa meskipun tidak digelitik?",
+          "appText": "Apakah bayi terkadang tertawa meskipun tidak digelitik?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah kepala bayi dapat mengikuti gerakan benang ke kanan dan ke kiri?",
+          "appText": "Apakah kepala bayi dapat mengikuti gerakan benang ke kanan dan ke kiri?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah bayi dapat mengikuti arah benagn digerakkan ke samping sekitar 180 derajat?",
+          "appText": "Apakah bayi dapat mengikuti arah benagn digerakkan ke samping sekitar 180 derajat?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah bayi dapat mengangkat kepalanya seperti pada gambar?",
+          "appText": "Apakah bayi dapat mengangkat kepalanya seperti pada gambar?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah bayi dapat mengangkat kepala membentuk sudut 45?",
+          "appText": "Apakah bayi dapat mengangkat kepala membentuk sudut 45?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah bayi dapat mengangkat kepalanya dengan tegak seperti pada gambar?",
+          "appText": "Apakah bayi dapat mengangkat kepalanya dengan tegak seperti pada gambar?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 6,
+      "file": "6_bulan.xlsx",
+      "hash": "421e514088147c9c3baf7331cf513657af369858733e43dd034c789f0b7a716b",
+      "sheet": "Pertanyaan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah bayi dapat mengikuti arah benang digerakkan ke samping sekitar 180 derajat?",
+          "appText": "Apakah bayi dapat mengikuti arah benang digerakkan ke samping sekitar 180 derajat?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Apakah bayi dapat mempertahankan lehernya saat kedua tangan diangkat/ditarik ke posisi duduk?",
+          "appText": "Apakah bayi dapat mempertahankan lehernya saat kedua tangan diangkat/ditarik ke posisi duduk?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Apakah bayi dapat mengangkat dada saat tengkurap dengan lengan sebagai penyangga?",
+          "appText": "Apakah bayi dapat mengangkat dada saat tengkurap dengan lengan sebagai penyangga?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah kepala bayi tetap tegak saat dipangku?",
+          "appText": "Apakah kepala bayi tetap tegak saat dipangku?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah bayi dapat menggenggam mainan atau pensil saat diletakkan ditelapak tangannya?",
+          "appText": "Apakah bayi dapat menggenggam mainan atau pensil saat diletakkan ditelapak tangannya?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah bayi dapat mengamati benda kecil berwarna warni di sekitarnya?",
+          "appText": "Apakah bayi dapat mengamati benda kecil berwarna warni di sekitarnya?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah bayi dapat menggapai mainan yang diletakkan dekatnya?",
+          "appText": "Apakah bayi dapat menggapai mainan yang diletakkan dekatnya?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah bayi dapat berbalik dari terlentang ke tengkuran dan sebaliknya?",
+          "appText": "Apakah bayi dapat berbalik dari terlentang ke tengkuran dan sebaliknya?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah bayi dapat mengeluarkan suara keras/tertawa saat bergembira?",
+          "appText": "Apakah bayi dapat mengeluarkan suara keras/tertawa saat bergembira?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah bayi tersenyum saat melihat mainan atau benda yang menarik?",
+          "appText": "Apakah bayi tersenyum saat melihat mainan atau benda yang menarik?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 9,
+      "file": "9_bulan.xlsx",
+      "hash": "bb9fddaa5bd10393ae31be3d5c6f1b77a5d0c06a55825ae44ff76279d042170b",
+      "sheet": "Pertanyaan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah bayi dapat mengambil manik-manik/benda kecil dengan ibu jari dan jari telunjuk?",
+          "appText": "Apakah bayi dapat mengambil manik-manik/benda kecil dengan ibu jari dan jari telunjuk?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Apakah bayi dapat mengambil dan memegang 2 kubus dengan kedua tangan?",
+          "appText": "Apakah bayi dapat mengambil dan memegang 2 kubus dengan kedua tangan?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Apakah bayi mencari benda mencolok yang dijatuhkan dari ke lantai?",
+          "appText": "Apakah bayi mencari benda mencolok yang dijatuhkan dari ke lantai?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah bayi dapat menggapai mainan yang diletakkan agak jauh?",
+          "appText": "Apakah bayi dapat menggapai mainan yang diletakkan agak jauh?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah bayi menengok saat ada orang diam-diam mendekat dari belakang?",
+          "appText": "Apakah bayi menengok saat ada orang diam-diam mendekat dari belakang?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "\"Apakah bayi dapat mengatakan 2 suku kata?\nContoh:\"Ma-ma\", \"da-da\", \"ba-ba\"",
+          "appText": "\"Apakah bayi dapat mengatakan 2 suku kata?\nContoh:\"Ma-ma\", \"da-da\", \"ba-ba\"",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah bayi dapat makan kue kering/biskuit sendiri?",
+          "appText": "Apakah bayi dapat makan kue kering/biskuit sendiri?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah bayi dapat memindahkan mainan kecil atau kue dari tangan satu ke tangan lain?",
+          "appText": "Apakah bayi dapat memindahkan mainan kecil atau kue dari tangan satu ke tangan lain?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah bayi dapat duduk sendiri selama 60 detik tanpa disangga?",
+          "appText": "Apakah bayi dapat duduk sendiri selama 60 detik tanpa disangga?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah bayi dapat mengangkat \nbadannya ke posisi berdiri tanpa bantuan?",
+          "appText": "Apakah bayi dapat mengangkat \nbadannya ke posisi berdiri tanpa bantuan?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 12,
+      "file": "12_bulan.xlsx",
+      "hash": "4dd4351b3c7ea3814b50d508092fb1efc2f13afa109eaa6dab7cb4938bbcaf0a",
+      "sheet": "Pertanyaan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah anak dapat menggenggam pensil dengan kuat?",
+          "appText": "Apakah anak dapat menggenggam pensil dengan kuat?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Apakah anak dapat mengambil manik-manik/benda kecil dengan ibu jari dan jari telunjuk?",
+          "appText": "Apakah anak dapat mengambil manik-manik/benda kecil dengan ibu jari dan jari telunjuk?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Apakah anak dapat membenturkan 2 kubus dengan kedua tangan?",
+          "appText": "Apakah anak dapat membenturkan 2 kubus dengan kedua tangan?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah anak dapat menirukan 2-3 kata?\nContoh: mama, minum, tidur, dll",
+          "appText": "Apakah anak dapat menirukan 2-3 kata?\nContoh: mama, minum, tidur, dll",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahas",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah anak dapat mengangkat \nbadannya ke posisi berdiri tanpa bantuan?",
+          "appText": "Apakah anak dapat mengangkat \nbadannya ke posisi berdiri tanpa bantuan?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah anak dapat duduk sendiri tanpa bantuan dari posisi tidur atau tengkurap?",
+          "appText": "Apakah anak dapat duduk sendiri tanpa bantuan dari posisi tidur atau tengkurap?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah anak dapat mengerti kata \"jangan\"?",
+          "appText": "Apakah anak dapat mengerti kata \"jangan\"?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahas",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah anak akan mencari ibu atau pengasuh saat bersembunyi dibelakang sesuatu?",
+          "appText": "Apakah anak akan mencari ibu atau pengasuh saat bersembunyi dibelakang sesuatu?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosial dan Kemandirian",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah anak dapat membedakan ibu atau pengasuh dengan orang lain yang belum dikenal?\nContoh: menangis atau tidak mau dipegang",
+          "appText": "Apakah anak dapat membedakan ibu atau pengasuh dengan orang lain yang belum dikenal?\nContoh: menangis atau tidak mau dipegang",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosial dan Kemandirian",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah anak dapat berdiri dengan berpegangan pada kursi atau meja selama 30 detik atau lebih?",
+          "appText": "Apakah anak dapat berdiri dengan berpegangan pada kursi atau meja selama 30 detik atau lebih?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 15,
+      "file": "15_bulan.xlsx",
+      "hash": "62699771e4c5a6aa892d6d83f84274eab3efd45da23bba04686930d1a8a8c0a5",
+      "sheet": "Pertanyaan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah anak dapat membenturkan 2 kubus dengan kedua tangan?",
+          "appText": "Apakah anak dapat membenturkan 2 kubus dengan kedua tangan?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Apakah anak dapat memasukkan 1 kubus atau mainan kedalam cangkir?",
+          "appText": "Apakah anak dapat memasukkan 1 kubus atau mainan kedalam cangkir?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Apakah anak dapat berjalan dengan berpegangan?",
+          "appText": "Apakah anak dapat berjalan dengan berpegangan?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah anak dapat mengatakan papa atau ibu secara spesifik?",
+          "appText": "Apakah anak dapat mengatakan papa atau ibu secara spesifik?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah anak dapat mengucapkan 1 kata dengan jelas?",
+          "appText": "Apakah anak dapat mengucapkan 1 kata dengan jelas?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah anak dapat bertepuk tangan atau melambaikan tangan?",
+          "appText": "Apakah anak dapat bertepuk tangan atau melambaikan tangan?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah anak dapat menunjukkan apa yang diinginkannya tanpa menangis atau merengek?",
+          "appText": "Apakah anak dapat menunjukkan apa yang diinginkannya tanpa menangis atau merengek?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah anak dapat berdiri sendiri selama 30 detik?",
+          "appText": "Apakah anak dapat berdiri sendiri selama 30 detik?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah anak dapat membungkuk untu mengambil mainan di lantai tanpa berpegangan dan kemudian berdiri kembali?",
+          "appText": "Apakah anak dapat membungkuk untu mengambil mainan di lantai tanpa berpegangan dan kemudian berdiri kembali?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah anak dapat berjalan dengan baik tanpa terhuyung?",
+          "appText": "Apakah anak dapat berjalan dengan baik tanpa terhuyung?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 18,
+      "file": "18_bulan.xlsx",
+      "hash": "4d3337be3b76db651544a7d627cb07c314c275b5a552e56e59d3b7280959a9d2",
+      "sheet": "Pertanyaan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah anak dapat mencorat coret kertas dengan pensil?",
+          "appText": "Apakah anak dapat mencorat coret kertas dengan pensil?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Apakah anak dapat mengucapkan 3 kata?\nContoh: Ibu, mama, nenek, susu, main, dll",
+          "appText": "Apakah anak dapat mengucapkan 3 kata?\nContoh: Ibu, mama, nenek, susu, main, dll",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Apakah anak dapat menunjukkan apa yang diinginkannya tanpa menangis atau merengek?",
+          "appText": "Apakah anak dapat menunjukkan apa yang diinginkannya tanpa menangis atau merengek?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah anak dapat minum dari cangkir/gelas sendiri?",
+          "appText": "Apakah anak dapat minum dari cangkir/gelas sendiri?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah anak dapat menirukan pekerjaan rumah seperti menyapu, mencuci, dll?",
+          "appText": "Apakah anak dapat menirukan pekerjaan rumah seperti menyapu, mencuci, dll?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah anak dapat menggelindingkan/melempar bola ke arah anda?",
+          "appText": "Apakah anak dapat menggelindingkan/melempar bola ke arah anda?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah anak dapat mengambil benda dilantai dengan cara membungkuk kemudian berdiri?",
+          "appText": "Apakah anak dapat mengambil benda dilantai dengan cara membungkuk kemudian berdiri?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah anak dapat berjalan dengan  baik tanpa terhuyung?",
+          "appText": "Apakah anak dapat berjalan dengan  baik tanpa terhuyung?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah anak dapat berjalan mundur sebanyak 5 langkah tanpa kehilangan keseimbangan?",
+          "appText": "Apakah anak dapat berjalan mundur sebanyak 5 langkah tanpa kehilangan keseimbangan?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah anak dapat melakukan 1 perintah dengan bantuan isyarat/gerak jari?\nContoh: ambil gelas, tutup pintu, taruh HP",
+          "appText": "Apakah anak dapat melakukan 1 perintah dengan bantuan isyarat/gerak jari?\nContoh: ambil gelas, tutup pintu, taruh HP",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 21,
+      "file": "21_bulan.xlsx",
+      "hash": "40dfd23d219ba5a127988758c2fc6319bf092fc2ecea581e4997724b76a14b16",
+      "sheet": "Usia 21 Bulan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah anak dapat mencorat coret kertas dengan pensil?",
+          "appText": "Apakah anak dapat mencorat coret kertas dengan pensil?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Apakah anak dapat menyusun 2 kubus?",
+          "appText": "Apakah anak dapat menyusun 2 kubus?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Sebutkan gambar dibawah ini, Apakah anak dapat menunjukkan minimal 1 gambar?",
+          "appText": "Sebutkan gambar dibawah ini, Apakah anak dapat menunjukkan minimal 1 gambar?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah anak dapat menunjukkan 1 bagian tubuh?\nContoh: tangan mana? hidung mana?, dll",
+          "appText": "Apakah anak dapat menunjukkan 1 bagian tubuh?\nContoh: tangan mana? hidung mana?, dll",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah anak dapat mengucapkan 7 kata?\nContoh: Ibu, mama, nenek, susu, main, bebek, ayam, bakso, dll",
+          "appText": "Apakah anak dapat mengucapkan 7 kata?\nContoh: Ibu, mama, nenek, susu, main, bebek, ayam, bakso, dll",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah anak dapat minum dari cangkir/gelas sendiri?",
+          "appText": "Apakah anak dapat minum dari cangkir/gelas sendiri?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah anak dapat menirukan pekerjaan rumah seperti menyapu, mencuci, dll?",
+          "appText": "Apakah anak dapat menirukan pekerjaan rumah seperti menyapu, mencuci, dll?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah anak dapat berlari tanpa terjatuh?",
+          "appText": "Apakah anak dapat berlari tanpa terjatuh?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah anak dapat mengambil benda dilantai dengan cara membungkuk kemudian berdiri?",
+          "appText": "Apakah anak dapat mengambil benda dilantai dengan cara membungkuk kemudian berdiri?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah anak dapat berjalan mundur sebanyak 5 langkah tanpa kehilangan keseimbangan?",
+          "appText": "Apakah anak dapat berjalan mundur sebanyak 5 langkah tanpa kehilangan keseimbangan?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 24,
+      "file": "24_bulan.xlsx",
+      "hash": "27ee355e8eba14f614477eb869a11bf0feaf35b90820baf0a2ec13964e113549",
+      "sheet": "Usia 24 Bulan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah anak dapat mencorat coret kertas dengan pensil?",
+          "appText": "Apakah anak dapat mencorat coret kertas dengan pensil?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Apakah anak dapat menyusun 4 kubus?",
+          "appText": "Apakah anak dapat menyusun 4 kubus?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Apakah anak dapat menunjukkan 2 bagian tubuh?\nContoh: tangan mana? hidung mana, dll",
+          "appText": "Apakah anak dapat menunjukkan 2 bagian tubuh?\nContoh: tangan mana? hidung mana, dll",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah anak dapat merangkai 2 kata?\nContoh: Minum susu, naik motor, beli jajan",
+          "appText": "Apakah anak dapat merangkai 2 kata?\nContoh: Minum susu, naik motor, beli jajan",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah anak dapat melepas baju dan celama sendiri?",
+          "appText": "Apakah anak dapat melepas baju dan celama sendiri?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah anak dapat makan menggunakan sendok sendiri?",
+          "appText": "Apakah anak dapat makan menggunakan sendok sendiri?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah anak dapat berlari tanpa terjatuh?",
+          "appText": "Apakah anak dapat berlari tanpa terjatuh?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah anak dapat naik tangga sendiri hanya berpegangan pada pegangan tangga?",
+          "appText": "Apakah anak dapat naik tangga sendiri hanya berpegangan pada pegangan tangga?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah anak dapat menendang bola ke depan tanpa berpegangan?",
+          "appText": "Apakah anak dapat menendang bola ke depan tanpa berpegangan?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah anak dapat melakukan 1 perintah?\nContoh: ambil gelas, tutup pintu, taruh HP",
+          "appText": "Apakah anak dapat melakukan 1 perintah?\nContoh: ambil gelas, tutup pintu, taruh HP",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 30,
+      "file": "30_bulan.xlsx",
+      "hash": "3c183591091eac15fd3b588c98c929fd998ad9899030b9ff78aa967b55595995",
+      "sheet": "Usia 30 Bulan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah anak dapat menyusun 4 kubus keatas membentuk kereta api?",
+          "appText": "Apakah anak dapat menyusun 4 kubus keatas membentuk kereta api?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Apakah anak bisa menirukan membuat garis lurus seperti gambar dibawah ini?\nContoh: minta anak menirukan garis yang anda buat kira-kira 2 cm",
+          "appText": "Apakah anak bisa menirukan membuat garis lurus seperti gambar dibawah ini?\nContoh: minta anak menirukan garis yang anda buat kira-kira 2 cm",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Apakah anak dapat menyebutkan nama 2 gambar dibawah? \njika anak menyebutkan suara hewannya maka tidak terhitung",
+          "appText": "Apakah anak dapat menyebutkan nama 2 gambar dibawah? \njika anak menyebutkan suara hewannya maka tidak terhitung",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah anak dapat menunjuk 4 gambar di antara gambar-gambar di dibawah ini dengan benar ketika Anda sebutkan namanya?",
+          "appText": "Apakah anak dapat menunjuk 4 gambar di antara gambar-gambar di dibawah ini dengan benar ketika Anda sebutkan namanya?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah anak dapat menunjukkan 6 bagian tubuh?\nContoh: tangan mana? hidung mana, dll",
+          "appText": "Apakah anak dapat menunjukkan 6 bagian tubuh?\nContoh: tangan mana? hidung mana, dll",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah anak dapat mengikuti 2 perintah sekaligus?\nContoh: ambilkan bola dan taruh di meja; ambilkan gelas dan kasih ke ke ibu",
+          "appText": "Apakah anak dapat mengikuti 2 perintah sekaligus?\nContoh: ambilkan bola dan taruh di meja; ambilkan gelas dan kasih ke ke ibu",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah anak dapat memakai baju atau celana sendiri?",
+          "appText": "Apakah anak dapat memakai baju atau celana sendiri?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialiasi dan Kemandirian",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah anak dapat menyuapi boneka?",
+          "appText": "Apakah anak dapat menyuapi boneka?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialiasi dan Kemandirian",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah anak dapat menendang bola kedepan?",
+          "appText": "Apakah anak dapat menendang bola kedepan?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah anak dapat melompat dengan mengangkat kedua kakinya secara bersamaan?",
+          "appText": "Apakah anak dapat melompat dengan mengangkat kedua kakinya secara bersamaan?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 36,
+      "file": "36_bulan.xlsx",
+      "hash": "794028e029e67b30eb9256c42e10cf22588b14045df49820bd61dfe7cea7c8ee",
+      "sheet": "Usia 36 Bulan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah anak dapat menyusun 6 kubus keatas membentuk menara?",
+          "appText": "Apakah anak dapat menyusun 6 kubus keatas membentuk menara?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Apakah anak bisa menirukan membuat garis lurus kebawah?\nContoh: minta anak menirukan garis yang anda buat",
+          "appText": "Apakah anak bisa menirukan membuat garis lurus kebawah?\nContoh: minta anak menirukan garis yang anda buat",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Apakah anak dapat menyebutkan nama 4 gambar dibawah (bukan suara)?",
+          "appText": "Apakah anak dapat menyebutkan nama 4 gambar dibawah (bukan suara)?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah anak dapat mengikuti 2 perintah sekaligus?\nContoh: ambilkan bola dan taruh di meja; ambilkan gelas dan kasih ke ke ibu",
+          "appText": "Apakah anak dapat mengikuti 2 perintah sekaligus?\nContoh: ambilkan bola dan taruh di meja; ambilkan gelas dan kasih ke ke ibu",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah orang lain bisa memahami sebagian isi perkataan/bicara anak?",
+          "appText": "Apakah orang lain bisa memahami sebagian isi perkataan/bicara anak?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah anak dapat membuat kalimat dengan 3 kata?\nContoh: Aku mau minum; ibu beli es; aku makan roti",
+          "appText": "Apakah anak dapat membuat kalimat dengan 3 kata?\nContoh: Aku mau minum; ibu beli es; aku makan roti",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah anak dapat menggosok gigi dengan dibantu (ibu manaruh odol)?",
+          "appText": "Apakah anak dapat menggosok gigi dengan dibantu (ibu manaruh odol)?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialiasi dan Kemandirian",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah anak dapat memakai baju atau celana sendiri?",
+          "appText": "Apakah anak dapat memakai baju atau celana sendiri?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialiasi dan Kemandirian",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah anak dapat melempar bola kearah anak dengan jarak 1,5 meter?",
+          "appText": "Apakah anak dapat melempar bola kearah anak dengan jarak 1,5 meter?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah anak dapat melompati selembar kertas/benda sepanjang 22 cm dengan mengangkat kedua kakinya secara bersamaan?",
+          "appText": "Apakah anak dapat melompati selembar kertas/benda sepanjang 22 cm dengan mengangkat kedua kakinya secara bersamaan?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 42,
+      "file": "42_bulan.xlsx",
+      "hash": "660829d90b3943c37a08dfced4e3ac7e031324e1b919a37d3f8c60c02ab73bc3",
+      "sheet": "Usia 42 Bulan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah anak bisa menirukan membuat garis lurus kebawah?\nContoh: minta anak menirukan garis yang anda buat",
+          "appText": "Apakah anak bisa menirukan membuat garis lurus kebawah?\nContoh: minta anak menirukan garis yang anda buat",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Apakah anak dapat menyusun 8 kubus keatas membentuk menara?",
+          "appText": "Apakah anak dapat menyusun 8 kubus keatas membentuk menara?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Apakah anak dapat menunjukkan 2 kegiatan dari gambar yang ada?\nContoh: Mana yang terbang?, mana yang berbicara? manan yang menggonggong, mana yang mengeong?",
+          "appText": "Apakah anak dapat menunjukkan 2 kegiatan dari gambar yang ada?\nContoh: Mana yang terbang?, mana yang berbicara? manan yang menggonggong, mana yang mengeong?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Tanyakan kepada anak pertanyaan dibawah ini satu persatu:\nContoh: kalo lapar, kamu . . . . , kalo haus maka kamu . . . . , kalo mengantuk, maka kamu . . . , kalo dingin, maka kamu . . . .",
+          "appText": "Tanyakan kepada anak pertanyaan dibawah ini satu persatu:\nContoh: kalo lapar, kamu . . . . , kalo haus maka kamu . . . . , kalo mengantuk, maka kamu . . . , kalo dingin, maka kamu . . . .",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah anak dapat menyebutkan 1 warna?",
+          "appText": "Apakah anak dapat menyebutkan 1 warna?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah anak dapat mencuci tangan dengan benar?",
+          "appText": "Apakah anak dapat mencuci tangan dengan benar?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialiasi dan Kemandirian",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah anak dapat menyebutkan nama teman atau saudara?",
+          "appText": "Apakah anak dapat menyebutkan nama teman atau saudara?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialiasi dan Kemandirian",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah anak dapat memakai kaos sendiri?",
+          "appText": "Apakah anak dapat memakai kaos sendiri?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialiasi dan Kemandirian",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah anak dapat melompati selembar kertas/benda sepanjang 22 cm dengan mengangkat kedua kakinya secara bersamaan, tanpa lari?",
+          "appText": "Apakah anak dapat melompati selembar kertas/benda sepanjang 22 cm dengan mengangkat kedua kakinya secara bersamaan, tanpa lari?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah anak dapat berdiri dengan 1 kaki selama 1 detik atau lebih?",
+          "appText": "Apakah anak dapat berdiri dengan 1 kaki selama 1 detik atau lebih?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 48,
+      "file": "48_bulan.xlsx",
+      "hash": "6d5e137b310cb500bf6d42fdd294c982d2a0db99ad3f9fea27291e2549e3c687",
+      "sheet": "Usia 48 Bulan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah anak bisa membuat jembatan dari 3 kubus seperti contoh?",
+          "appText": "Apakah anak bisa membuat jembatan dari 3 kubus seperti contoh?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Apakah anak dapat meniru gambar lingkaran?",
+          "appText": "Apakah anak dapat meniru gambar lingkaran?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Apakah anak dapat menunjukkan 2 kegiatan dari gambar yang ada?\nContoh: Mana yang terbang?, mana yang berbicara? manan yang menggonggong, mana yang mengeong?",
+          "appText": "Apakah anak dapat menunjukkan 2 kegiatan dari gambar yang ada?\nContoh: Mana yang terbang?, mana yang berbicara? manan yang menggonggong, mana yang mengeong?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan bahasa",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah anak dapat menyebutkan nama lengkapnya dengan jelas?",
+          "appText": "Apakah anak dapat menyebutkan nama lengkapnya dengan jelas?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah anak dapat mengambil dan menghitung 1 kubus/benda?",
+          "appText": "Apakah anak dapat mengambil dan menghitung 1 kubus/benda?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah anak dapat menyebutkan kegunaan atau bahan dari 3 benda? \nContoh: gelas untuk apa? piring untuk apa? kursi untuk apa? pensil untuk apa? meja terbuat terbuat dari apa? dll.",
+          "appText": "Apakah anak dapat menyebutkan kegunaan atau bahan dari 3 benda? \nContoh: gelas untuk apa? piring untuk apa? kursi untuk apa? pensil untuk apa? meja terbuat terbuat dari apa? dll.",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah anak bisa bermain ular tangga, kartu, petak umpet, atau  permainan lainnya",
+          "appText": "Apakah anak bisa bermain ular tangga, kartu, petak umpet, atau  permainan lainnya",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah anak dapat memakai kaos sendiri?",
+          "appText": "Apakah anak dapat memakai kaos sendiri?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah anak dapat melompati selembar kertas/benda sepanjang 22 cm?",
+          "appText": "Apakah anak dapat melompati selembar kertas/benda sepanjang 22 cm?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah anak dapat berdiri dengan 1 kaki selama 2 detik atau lebih?",
+          "appText": "Apakah anak dapat berdiri dengan 1 kaki selama 2 detik atau lebih?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 54,
+      "file": "54_bulan.xlsx",
+      "hash": "1876bdb2fef51988b30e5c28d27971271c9c5cb6598f14fdfe01524fe23e89b2",
+      "sheet": "Usia 54 Bulan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah anak dapat menunjuk garis yang lebih panjang sebanyak 3 kali dengan benar pada posisi yang berbeda?",
+          "appText": "Apakah anak dapat menunjuk garis yang lebih panjang sebanyak 3 kali dengan benar pada posisi yang berbeda?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Apakah anak dapat mencontoh tanda + ?\nJawablah \"Ya\" jika kedua garis berpotongan ditengah",
+          "appText": "Apakah anak dapat mencontoh tanda + ?\nJawablah \"Ya\" jika kedua garis berpotongan ditengah",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Minta anak menggambar orang tanpa diberi contoh, kemudian hitunglah jumlah bagian tubuh yang digambar.\nApakah anak bisa menggambar orang sebanyak 3 bagian tubuh?",
+          "appText": "Minta anak menggambar orang tanpa diberi contoh, kemudian hitunglah jumlah bagian tubuh yang digambar.\nApakah anak bisa menggambar orang sebanyak 3 bagian tubuh?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah anak dapat menyebutkan 2 warna?",
+          "appText": "Apakah anak dapat menyebutkan 2 warna?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah orang lain dapat mengerti semua perkataan/pembicaraan anak?",
+          "appText": "Apakah orang lain dapat mengerti semua perkataan/pembicaraan anak?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah anak bisa bermain ular tangga, kartu, petak umpet, atau  permainan lainnya?",
+          "appText": "Apakah anak bisa bermain ular tangga, kartu, petak umpet, atau  permainan lainnya?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan kemandirian",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah anak bisa menggosok gigi tanpa di bantu?",
+          "appText": "Apakah anak bisa menggosok gigi tanpa di bantu?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah anak dapat mengancingkan baju nya sendiri?",
+          "appText": "Apakah anak dapat mengancingkan baju nya sendiri?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah anak dapat melakukan minimal 2 perintah terkait kata depan?\nContoh: Taruh mainan/benda diatas meja, taruh boneka/mainan dibawah meja, taruh benda/mainan di depan ibu, taruh benda dibelakang pintu, dll",
+          "appText": "Apakah anak dapat melakukan minimal 2 perintah terkait kata depan?\nContoh: Taruh mainan/benda diatas meja, taruh boneka/mainan dibawah meja, taruh benda/mainan di depan ibu, taruh benda dibelakang pintu, dll",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah anak dapat berdiri dengan 1 kaki selama 2 detik atau lebih?",
+          "appText": "Apakah anak dapat berdiri dengan 1 kaki selama 2 detik atau lebih?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 60,
+      "file": "60_bulan.xlsx",
+      "hash": "94d8d1e83a53432bfdc694f6a49b575dca9a0c2a283b485a0f29e544c04ad779",
+      "sheet": "Usia 60 Bulan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah anak dapat menunjukkan garis yang lebih panjang sebanyak 3 kali? (lihat contoh)",
+          "appText": "Apakah anak dapat menunjukkan garis yang lebih panjang sebanyak 3 kali? (lihat contoh)",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Minta anak menggambar orang tanpa diberi contoh, kemudian hitunglah jumlah bagian tubuh yang digambar.\nApakah anak bisa menggambar orang sebanyak 3 bagian tubuh?",
+          "appText": "Minta anak menggambar orang tanpa diberi contoh, kemudian hitunglah jumlah bagian tubuh yang digambar.\nApakah anak bisa menggambar orang sebanyak 3 bagian tubuh?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Apakah anak dapat menyebutkan 4 warna?",
+          "appText": "Apakah anak dapat menyebutkan 4 warna?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan bahasa",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah anak mengerti 3 kata sifat?\nContoh: kalo lapar, kamu . . . . , kalo haus maka kamu . . . . , kalo mengantuk, maka kamu . . . , kalo dingin, maka kamu . . . .",
+          "appText": "Apakah anak mengerti 3 kata sifat?\nContoh: kalo lapar, kamu . . . . , kalo haus maka kamu . . . . , kalo mengantuk, maka kamu . . . , kalo dingin, maka kamu . . . .",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah anak dapat mengancingkan baju nya sendiri?",
+          "appText": "Apakah anak dapat mengancingkan baju nya sendiri?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah anak tidak rewel dan tenang saat di tinggal orang tua beberapa saat?",
+          "appText": "Apakah anak tidak rewel dan tenang saat di tinggal orang tua beberapa saat?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah anak dapat berpakaian sendiri tanpa dibantu?",
+          "appText": "Apakah anak dapat berpakaian sendiri tanpa dibantu?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan Kemandirian",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah anak dapat melakukan perintah terkait kata depan?\nContoh: Taruh mainan/benda diatas meja, taruh boneka/mainan dibawah meja, taruh benda/mainan di depan ibu, taruh benda dibelakang pintu, dll",
+          "appText": "Apakah anak dapat melakukan perintah terkait kata depan?\nContoh: Taruh mainan/benda diatas meja, taruh boneka/mainan dibawah meja, taruh benda/mainan di depan ibu, taruh benda dibelakang pintu, dll",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan bahasa",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Minta anak untuk berdiri 1 kaki tanpa berpegangan. \nDapatkah ia mempertahankan keseimbangan dalam waktu 2 detik atau lebih?",
+          "appText": "Minta anak untuk berdiri 1 kaki tanpa berpegangan. \nDapatkah ia mempertahankan keseimbangan dalam waktu 2 detik atau lebih?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah anak dapat melompat dengan 1 kaki?",
+          "appText": "Apakah anak dapat melompat dengan 1 kaki?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 66,
+      "file": "66_bulan.xlsx",
+      "hash": "80fba83c88f8f9ede54db5ff022e6c877ec254c8f4842d914a129f7a4ba3848a",
+      "sheet": "Usia 66 Bulan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Apakah anak dapat mencontoh tanda + \nJawablah \"Ya\" jika kedua garis berpotongan ditengah",
+          "appText": "Apakah anak dapat mencontoh tanda + \nJawablah \"Ya\" jika kedua garis berpotongan ditengah",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Tunjukkan gambar kotak dibawah dan minta anak menirukan gambar tersebut.  \nApakah anak dapat menggambar seperti contoh?",
+          "appText": "Tunjukkan gambar kotak dibawah dan minta anak menirukan gambar tersebut.  \nApakah anak dapat menggambar seperti contoh?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Minta anak menggambar orang tanpa diberi contoh, kemudian hitunglah jumlah bagian tubuh yang digambar.\nApakah anak bisa menggambar orang sebanyak 3 bagian tubuh?",
+          "appText": "Minta anak menggambar orang tanpa diberi contoh, kemudian hitunglah jumlah bagian tubuh yang digambar.\nApakah anak bisa menggambar orang sebanyak 3 bagian tubuh?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Minta anak mengambil dan menghitung 5 kubus, dapatkan anak melakukannya dengan benar?",
+          "appText": "Minta anak mengambil dan menghitung 5 kubus, dapatkan anak melakukannya dengan benar?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah anak dapat mengartikan 5 kata? \nContoh: apa itu bola, piring, baju, kursi, TV, mobil, jeruk, dll.",
+          "appText": "Apakah anak dapat mengartikan 5 kata? \nContoh: apa itu bola, piring, baju, kursi, TV, mobil, jeruk, dll.",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Minta anak menyebutkan lawan kata seperti \"kalo gajah besar, maka tikus . . . .\"; kalo api panas, maka es . . . . .\", kalo siang terang, maka malam . . ..\"; kalo ayah tinggi, maka adek . . . .\" \nApakah anak bisa menjawab 3 pertanyaan dengan benar?",
+          "appText": "Minta anak menyebutkan lawan kata seperti \"kalo gajah besar, maka tikus . . . .\"; kalo api panas, maka es . . . . .\", kalo siang terang, maka malam . . ..\"; kalo ayah tinggi, maka adek . . . .\" \nApakah anak bisa menjawab 3 pertanyaan dengan benar?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah anak tidak rewel dan tenang saat di tinggal orang tua beberapa saat?",
+          "appText": "Apakah anak tidak rewel dan tenang saat di tinggal orang tua beberapa saat?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan kemandirian",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah anak dapat berpakaian sendiri tanpa dibantu?",
+          "appText": "Apakah anak dapat berpakaian sendiri tanpa dibantu?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan kemandirian",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah anak dapat berdiri dengan 1 kaki selama 6 detik?",
+          "appText": "Apakah anak dapat berdiri dengan 1 kaki selama 6 detik?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "Apakah anak dapat mengangkap bola dengan kedua tangannya?",
+          "appText": "Apakah anak dapat mengangkap bola dengan kedua tangannya?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 14
+        }
+      ]
+    },
+    {
+      "ageMonths": 72,
+      "file": "72_bulan.xlsx",
+      "hash": "b15a2f6e1517530015f5923bc39cfe12bc13a90d8df8060f97dbd53312c8eb36",
+      "sheet": "Usia 72 Bulan",
+      "questions": [
+        {
+          "number": 1,
+          "text": "Tunjukkan gambar kotak dibawah dan minta anak menirukan gambar tersebut.  \nApakah anak dapat menggambar seperti contoh?",
+          "appText": "Tunjukkan gambar kotak dibawah dan minta anak menirukan gambar tersebut.  \nApakah anak dapat menggambar seperti contoh?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 5
+        },
+        {
+          "number": 2,
+          "text": "Minta anak menggambar orang tanpa diberi contoh, kemudian hitunglah jumlah bagian tubuh yang digambar.\nApakah anak bisa menggambar orang sebanyak 6 bagian tubuh?",
+          "appText": "Minta anak menggambar orang tanpa diberi contoh, kemudian hitunglah jumlah bagian tubuh yang digambar.\nApakah anak bisa menggambar orang sebanyak 6 bagian tubuh?",
+          "category": "Gerak Halus",
+          "originalCategory": "Gerak Halus",
+          "row": 6
+        },
+        {
+          "number": 3,
+          "text": "Minta anak menyebutkan lawan kata seperti \"kalo gajah besar, maka tikus . . . .\"; kalo api panas, maka es . . . . .\", kalo siang terang, maka malam . . ..\"; kalo ayah tinggi, maka adek . . . .\" \nApakah anak bisa menjawab 3 pertanyaan dengan benar?",
+          "appText": "Minta anak menyebutkan lawan kata seperti \"kalo gajah besar, maka tikus . . . .\"; kalo api panas, maka es . . . . .\", kalo siang terang, maka malam . . ..\"; kalo ayah tinggi, maka adek . . . .\" \nApakah anak bisa menjawab 3 pertanyaan dengan benar?",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 7
+        },
+        {
+          "number": 4,
+          "text": "Apakah anak dapat mengartikan 7 kata? \nContoh: apa itu bola, piring, baju, kursi, TV, mobil, jeruk, dll.",
+          "appText": "Apakah anak dapat mengartikan 7 kata? \nContoh: apa itu bola, piring, baju, kursi, TV, mobil, jeruk, dll.",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 8
+        },
+        {
+          "number": 5,
+          "text": "Apakah anak dapat menyebutkan kegunaan atau bahan dari 3 benda? \nContoh: gelas untuk apa? piring untuk apa? kursi untuk apa? pensil untuk apa? meja terbuat terbuat dari apa? dll.",
+          "appText": "Apakah anak dapat menyebutkan kegunaan atau bahan dari 3 benda? \nContoh: gelas untuk apa? piring untuk apa? kursi untuk apa? pensil untuk apa? meja terbuat terbuat dari apa? dll.",
+          "category": "Bicara dan Bahasa",
+          "originalCategory": "Bicara dan Bahasa",
+          "row": 9
+        },
+        {
+          "number": 6,
+          "text": "Apakah anak dapat menggosok giginya tanpa bantuan?",
+          "appText": "Apakah anak dapat menggosok giginya tanpa bantuan?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan kemandirian",
+          "row": 10
+        },
+        {
+          "number": 7,
+          "text": "Apakah anak dapat mengambil makanan atau minuman sendiri tanpa tumpah?",
+          "appText": "Apakah anak dapat mengambil makanan atau minuman sendiri tanpa tumpah?",
+          "category": "Sosialisasi dan Kemandirian",
+          "originalCategory": "Sosialisasi dan kemandirian",
+          "row": 11
+        },
+        {
+          "number": 8,
+          "text": "Apakah anak dapat menangkap bola kecil sebesar bola tenis atau bola kasti hanya dengan menggunakan kedua tangannya?",
+          "appText": "Apakah anak dapat menangkap bola kecil sebesar bola tenis atau bola kasti hanya dengan menggunakan kedua tangannya?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 12
+        },
+        {
+          "number": 9,
+          "text": "Apakah anak dapat berjalan digaris lurus seperti contoh? (posisi tumit kaki depan saat berjalan adalah berdekatan dengan jari kaki yang belakang)",
+          "appText": "Apakah anak dapat berjalan digaris lurus seperti contoh? (posisi tumit kaki depan saat berjalan adalah berdekatan dengan jari kaki yang belakang)",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 13
+        },
+        {
+          "number": 10,
+          "text": "apakah anak dapat berdiri 1 kaki selama 11 detik?",
+          "appText": "apakah anak dapat berdiri 1 kaki selama 11 detik?",
+          "category": "Gerak Kasar",
+          "originalCategory": "Gerak Kasar",
+          "row": 14
+        }
+      ]
+    }
+  ],
+  "textDifferences": []
+}

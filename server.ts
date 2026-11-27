@@ -5,6 +5,10 @@ import os from "os";
 import path from "path";
 import type { ViteDevServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import { requireUser, rateLimit } from "./server/http.ts";
+import { puskesmasRouter } from "./server/puskesmas.ts";
+import { rusdiRouter } from "./server/rusdi/router.ts";
+import { closeKnowledgePool } from "./server/rusdi/database.ts";
 import { INTERVENSI_KNOWLEDGE } from "./src/data/knowledge.ts";
 
 // ── Terminal Styling & Logger Utilities ───────────────────────────────────────
@@ -85,11 +89,11 @@ function printStartupBanner(port: number, bootMs: number, isProd: boolean) {
   const emptyLine = padLine("");
 
   const networkIp = getNetworkIp();
-  const hasGemini = Boolean(process.env.GEMINI_API_KEY?.trim());
+  const hasGemini = Boolean(process.env.GEMINI_API_KEY?.trim() && (process.env.GEMINI_GENERATION_MODEL || process.env.RUSDI_GENERATION_MODEL)?.trim());
   const hasMaps = Boolean(
     (
-      process.env.GOOGLE_MAPS_PLATFORM_KEY ||
-      process.env.VITE_GOOGLE_MAPS_PLATFORM_KEY
+      process.env.GOOGLE_PLACES_SERVER_KEY ||
+      process.env.GOOGLE_MAPS_PLATFORM_KEY
     )?.trim(),
   );
 
@@ -139,7 +143,7 @@ function printStartupBanner(port: number, bootMs: number, isProd: boolean) {
     emptyLine,
     padLine(`   ${c.gray}${c.bold}SERVICES${c.reset}`),
     padLine(
-      `   ${c.gray}Gemini AI${c.reset}      ${statusBadge(hasGemini, "Connected", "Fallback Mode (No Key)")}`,
+      `   ${c.gray}Gemini AI${c.reset}      ${statusBadge(hasGemini, "Configured", "Fallback Mode (Key/Model)")}`,
     ),
     padLine(
       `   ${c.gray}Google Maps${c.reset}    ${statusBadge(hasMaps, "Connected (Places New)", "Not Configured")}`,
@@ -162,31 +166,8 @@ function printStartupBanner(port: number, bootMs: number, isProd: boolean) {
 
 let aiClient: GoogleGenAI | null = null;
 
-// ── In-memory cache untuk hasil pencarian puskesmas ──────────────────────────
-// Key: "lat_lng" dibulatkan ke 2 desimal (~1.1 km presisi), TTL: 10 menit
-const puskesmasCache = new Map<string, { result: any; ts: number }>();
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 menit
-
-function getPuskesmasCacheKey(lat: number, lng: number): string {
-  return `${lat.toFixed(2)}_${lng.toFixed(2)}`;
-}
-
-function getCachedPuskesmas(lat: number, lng: number) {
-  const key = getPuskesmasCacheKey(lat, lng);
-  const cached = puskesmasCache.get(key);
-  if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
-    return cached.result;
-  }
-  puskesmasCache.delete(key);
-  return null;
-}
-
-function setCachedPuskesmas(lat: number, lng: number, result: any) {
-  const key = getPuskesmasCacheKey(lat, lng);
-  puskesmasCache.set(key, { result, ts: Date.now() });
-}
-
 function getAiClient(): GoogleGenAI | null {
+  if (!(process.env.GEMINI_GENERATION_MODEL || process.env.RUSDI_GENERATION_MODEL)?.trim()) return null;
   if (!aiClient) {
     const key = process.env.GEMINI_API_KEY;
     if (key && key.trim().length > 0) {
@@ -202,25 +183,6 @@ function getAiClient(): GoogleGenAI | null {
 }
 
 // --- OFFLINE FALLBACK HELPER FUNCTIONS ---
-
-function calculateDistance(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number,
-): number {
-  const R = 6371; // Radius of earth in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
 
 function getAgeRecommendations(ageStr: string): {
   id: string;
@@ -516,89 +478,6 @@ ${recs.enNext || nextStepsEn}
   return { id: idMarkdown, en: enMarkdown };
 }
 
-function generateFallbackPuskesmas(lat: number, lng: number) {
-  const isNearJakarta =
-    lat >= -6.4 && lat <= -6.1 && lng >= 106.6 && lng <= 107.0;
-
-  if (isNearJakarta) {
-    const realJakarta = [
-      {
-        name: "Puskesmas Kecamatan Setiabudi",
-        address:
-          "Jl. Halimun No.4, Guntur, Kec. Setiabudi, Kota Jakarta Selatan, Daerah Khusus Ibukota Jakarta 12980",
-        phone: "021-5254148",
-        lat: -6.2114,
-        lng: 106.8296,
-      },
-      {
-        name: "Puskesmas Kecamatan Menteng",
-        address:
-          "Jl. Pegangsaan Barat No.14, RT.16/RW.5, Pegangsaan, Kec. Menteng, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10320",
-        phone: "021-3140513",
-        lat: -6.2023,
-        lng: 106.8439,
-      },
-      {
-        name: "Puskesmas Kecamatan Tebet",
-        address:
-          "Jl. Tebet Timur Dalam No.2, RT.1/RW.4, Tebet Tim., Kec. Tebet, Kota Jakarta Selatan, Daerah Khusus Ibukota Jakarta 12820",
-        phone: "021-8301147",
-        lat: -6.2291,
-        lng: 106.8532,
-      },
-      {
-        name: "Puskesmas Kecamatan Matraman",
-        address:
-          "Jl. Kebon Kelapa No.21, RT.11/RW.1, Utan Kayu Sel., Kec. Matraman, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13120",
-        phone: "021-8581950",
-        lat: -6.2081,
-        lng: 106.8576,
-      },
-      {
-        name: "Puskesmas Kecamatan Kebayoran Baru",
-        address:
-          "Jl. Kerinci VII No.2, RT.4/RW.2, Gandaria Utara, Kec. Kby. Baru, Kota Jakarta Selatan, Daerah Khusus Ibukota Jakarta 12140",
-        phone: "021-7243354",
-        lat: -6.2415,
-        lng: 106.7972,
-      },
-    ];
-
-    return realJakarta
-      .map((p) => {
-        const d = calculateDistance(lat, lng, p.lat, p.lng);
-        return {
-          ...p,
-          distance: `${d.toFixed(1)} km`,
-        };
-      })
-      .sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
-  }
-
-  const offsets = [
-    { dLat: 0.0053, dLng: -0.0042, suffix: "Utama", type: "Kecamatan" },
-    { dLat: -0.0074, dLng: 0.0065, suffix: "Sektor 2", type: "Pembantu" },
-    { dLat: 0.0112, dLng: 0.0098, suffix: "Kelurahan", type: "Kelurahan" },
-    { dLat: -0.0135, dLng: -0.0112, suffix: "Pratama", type: "Pratama" },
-  ];
-
-  return offsets.map((off, index) => {
-    const targetLat = lat + off.dLat;
-    const targetLng = lng + off.dLng;
-    const dist = calculateDistance(lat, lng, targetLat, targetLng);
-    const phones = ["(021) 1500-111", "(021) 525-4148", "(021) 830-1147", "-"];
-
-    return {
-      name: `Puskesmas ${off.type} ${off.suffix}`,
-      address: `Jl. Kesehatan Indah No. ${15 + index * 12}, Wilayah Sekitar Koordinat (${targetLat.toFixed(3)}, ${targetLng.toFixed(3)})`,
-      distance: `${dist.toFixed(1)} km`,
-      phone: phones[index],
-      lat: targetLat,
-      lng: targetLng,
-    };
-  });
-}
-
 async function startServer() {
   const bootStart = performance.now();
   const app = express();
@@ -693,7 +572,7 @@ async function startServer() {
   });
   // ─────────────────────────────────────────────────────────────────────────
 
-  app.use(express.json());
+  app.use(express.json({ limit: "48kb" }));
 
   // ── Pretty HTTP request logger (hanya untuk API & SEO endpoints) ────────────
   app.use((req, res, next) => {
@@ -733,16 +612,26 @@ async function startServer() {
         : "";
 
       console.log(
-        `  ${c.gray}${formatTime()}${c.reset}  ${methodColor}${c.bold}${req.method.padEnd(6)}${c.reset}  ${c.white}${req.originalUrl.padEnd(32)}${c.reset}  ${statusColor}${c.bold}${res.statusCode}${c.reset}  ${timeColor}${durationStr.padStart(6)}${c.reset}${sourceTag}`,
+        `  ${c.gray}${formatTime()}${c.reset}  ${methodColor}${c.bold}${req.method.padEnd(6)}${c.reset}  ${c.white}${req.path.padEnd(32)}${c.reset}  ${statusColor}${c.bold}${res.statusCode}${c.reset}  ${timeColor}${durationStr.padStart(6)}${c.reset}${sourceTag}`,
       );
     });
     next();
   });
 
+  const aiLimiter = rateLimit();
+  const placesLimiter = rateLimit(30, 300);
+  app.use('/api/nearby-puskesmas', requireUser, placesLimiter);
+  app.use('/api/puskesmas', requireUser, placesLimiter);
+  app.use('/api', puskesmasRouter());
+  app.use('/api/rusdi', requireUser, rusdiRouter());
+
   // API routes FIRST
-  app.post("/api/analyze-questionnaire", async (req, res) => {
+  app.post("/api/analyze-questionnaire", requireUser, aiLimiter, async (req, res) => {
     try {
-      const { ageCategory, totalScore, qna } = req.body;
+      const { ageCategory, totalScore, qna } = req.body ?? {};
+      if (typeof ageCategory !== 'string' || !/^\d+_bulan$/.test(ageCategory) || typeof totalScore !== 'number' || !Number.isInteger(totalScore) || totalScore < 0 || totalScore > 10 || !Array.isArray(qna) || qna.length !== 10 || qna.some((item: any) => !item || typeof item.kategori !== 'string' || typeof item.pertanyaan !== 'string' || item.pertanyaan.length > 2000 || !['Iya','Tidak'].includes(item.jawaban))) {
+        res.status(400).json({ error: 'Data skrining tidak valid.' }); return;
+      }
 
       const prompt = `Anda adalah asisten AI ahli tumbuh kembang anak.
 Berdasarkan data kuesioner berikut, berikan analisis yang mendukung dan suportif kepada orang tua dengan format Markdown.
@@ -776,10 +665,11 @@ Berikan respons akhir Anda dalam format JSON (bukan markdown block) dengan prope
       } else {
         try {
           const response = await ai.models.generateContent({
-            model: "gemini-4-hydrogen",
+            model: (process.env.GEMINI_GENERATION_MODEL || process.env.RUSDI_GENERATION_MODEL)!,
             contents: prompt,
             config: {
               responseMimeType: "application/json",
+              httpOptions: { timeout: 8000 },
             },
           });
           parsedResponse = JSON.parse(response.text || "{}");
@@ -813,9 +703,10 @@ Berikan respons akhir Anda dalam format JSON (bukan markdown block) dengan prope
     }
   });
 
-  app.post("/api/translate-analysis", async (req, res) => {
+  app.post("/api/translate-analysis", requireUser, aiLimiter, async (req, res) => {
     try {
-      const { text, targetLang } = req.body;
+      const { text, targetLang } = req.body ?? {};
+      if (typeof text !== 'string' || text.length > 12000 || !['id','en'].includes(targetLang)) { res.status(400).json({ error: 'Data terjemahan tidak valid.' }); return; }
 
       const prompt = `Translate the following markdown text into ${targetLang === "en" ? "English" : "Indonesian"}. Preserve all markdown formatting, emojis, and styling. Output ONLY the translated text without any wrapping code blocks.
       
@@ -833,8 +724,9 @@ ${text}`;
       } else {
         try {
           const response = await ai.models.generateContent({
-            model: "gemini-4-hydrogen",
+            model: (process.env.GEMINI_GENERATION_MODEL || process.env.RUSDI_GENERATION_MODEL)!,
             contents: prompt,
+            config: { httpOptions: { timeout: 8000 } },
           });
           translatedText = response.text;
           isFallback = false;
@@ -854,165 +746,6 @@ ${text}`;
     } catch (error) {
       logger.error("API", "Gagal menerjemahkan teks analisis", error);
       res.status(500).json({ error: "Failed to translate" });
-    }
-  });
-
-  app.post("/api/nearby-puskesmas", async (req, res) => {
-    try {
-      const { lat, lng } = req.body;
-
-      // ── Strategi 0: Kembalikan dari cache jika ada (instan) ───────────────────
-      const cached = getCachedPuskesmas(lat, lng);
-      if (cached) {
-        res.locals.logSource = "Cache Hit";
-        return res.json({
-          result: cached.result,
-          isFallback: cached.isFallback,
-          fromCache: true,
-        });
-      }
-
-      // ── Strategi 1: Google Places API (New) — Text Search (cepat ~1-3 detik) ──
-      // Migrasi dari legacy /maps/api/place/nearbysearch/json (keyword=puskesmas)
-      // ke Places API (New) places:searchText dengan header wajib X-Goog-FieldMask.
-      const mapsKey =
-        process.env.GOOGLE_MAPS_PLATFORM_KEY ||
-        process.env.VITE_GOOGLE_MAPS_PLATFORM_KEY;
-      if (mapsKey && mapsKey.trim().length > 0) {
-        try {
-          const radius = 5000.0; // 5 km radius
-          const placesUrl = "https://places.googleapis.com/v1/places:searchText";
-          const fieldMask = [
-            "places.displayName",
-            "places.formattedAddress",
-            "places.location",
-            "places.nationalPhoneNumber",
-          ].join(",");
-
-          const placesRes = await fetch(placesUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Goog-Api-Key": mapsKey.trim(),
-              "X-Goog-FieldMask": fieldMask,
-            },
-            body: JSON.stringify({
-              textQuery: "puskesmas",
-              languageCode: "id",
-              maxResultCount: 5,
-              rankPreference: "DISTANCE",
-              locationBias: {
-                circle: {
-                  center: {
-                    latitude: Number(lat),
-                    longitude: Number(lng),
-                  },
-                  radius,
-                },
-              },
-            }),
-            signal: AbortSignal.timeout(8000),
-          });
-
-          const placesData = await placesRes.json().catch(() => ({}));
-          if (
-            placesRes.ok &&
-            Array.isArray(placesData.places) &&
-            placesData.places.length > 0
-          ) {
-            const puskesmas = placesData.places
-              .slice(0, 5)
-              .map((place: any) => {
-                const pLat = place.location?.latitude ?? lat;
-                const pLng = place.location?.longitude ?? lng;
-                const dist = calculateDistance(lat, lng, pLat, pLng);
-                return {
-                  name: place.displayName?.text || "Puskesmas",
-                  address: place.formattedAddress || "-",
-                  distance: `${dist.toFixed(1)} km`,
-                  phone: place.nationalPhoneNumber || "-",
-                  lat: pLat,
-                  lng: pLng,
-                };
-              })
-              .sort(
-                (a: any, b: any) =>
-                  parseFloat(a.distance) - parseFloat(b.distance),
-              );
-
-            const finalResult = { puskesmas };
-            setCachedPuskesmas(lat, lng, {
-              result: finalResult,
-              isFallback: false,
-            });
-            res.locals.logSource = "Places API (New)";
-            return res.json({ result: finalResult, isFallback: false });
-          } else if (!placesRes.ok) {
-            const errStatus =
-              placesData?.error?.status || `HTTP ${placesRes.status}`;
-            const errMsg = placesData?.error?.message || placesRes.statusText;
-            logger.warn(
-              "PLACES",
-              `Places API (New) error: ${errStatus}${errMsg ? ` (${errMsg})` : ""}`,
-            );
-          }
-        } catch (placesError: any) {
-          logger.warn(
-            "PLACES",
-            `Places API (New) tidak tersedia, beralih ke Gemini (${placesError?.message || "timeout"}).`,
-          );
-        }
-      }
-
-      // ── Strategi 2: Gemini flash tanpa Google Search (fallback cepat ~5-10 detik) ─
-      const ai = getAiClient();
-      if (ai) {
-        try {
-          const prompt = `Berikan daftar 4-5 puskesmas yang realistis dan umum dikenal di Indonesia terdekat dari koordinat: Latitude ${lat}, Longitude ${lng}.
-Gunakan pengetahuan umum Anda tentang nama puskesmas nyata di kota/wilayah tersebut.
-Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format persis:
-{"puskesmas":[{"name":"Nama Puskesmas","address":"Alamat Lengkap","distance":"X.X km","phone":"Nomor Telp atau -","lat":${lat},"lng":${lng}}]}`;
-
-          const response = await ai.models.generateContent({
-            model: "gemini-3.8-flash",
-            contents: prompt,
-            config: {
-              responseMimeType: "application/json",
-            },
-          });
-
-          const text = response.text || "{}";
-          const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-          const jsonString = jsonMatch ? jsonMatch[1] : text;
-          const parsedResult = JSON.parse(jsonString);
-
-          if (parsedResult?.puskesmas?.length > 0) {
-            setCachedPuskesmas(lat, lng, {
-              result: parsedResult,
-              isFallback: false,
-            });
-            res.locals.logSource = "Gemini AI";
-            return res.json({ result: parsedResult, isFallback: false });
-          }
-        } catch (geminiError: any) {
-          logger.warn(
-            "GEMINI",
-            `Pencarian puskesmas Gemini gagal, beralih ke fallback lokal (${geminiError?.message || "error"}).`,
-          );
-        }
-      }
-
-      // ── Strategi 3: Fallback lokal berbasis koordinat (instan) ───────────────
-      const parsedResult = { puskesmas: generateFallbackPuskesmas(lat, lng) };
-      setCachedPuskesmas(lat, lng, { result: parsedResult, isFallback: true });
-      res.locals.logSource = "Local Fallback";
-      return res.json({ result: parsedResult, isFallback: true });
-    } catch (error: any) {
-      logger.error("API", "Gagal mencari puskesmas terdekat", error);
-      res.status(500).json({
-        error: "Gagal menghubungi faskes terdekat. Silakan coba lagi nanti.",
-        details: error?.message || "Unknown error",
-      });
     }
   });
 
@@ -1085,6 +818,12 @@ Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format pers
     app.use(viteServer.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
+    app.use((req, res, next) => {
+      let pathname: string;
+      try { pathname = decodeURIComponent(req.path); } catch { res.status(400).end(); return; }
+      if (/(?:^|[\\/])server\.cjs(?:\.map)?$/i.test(pathname)) { res.status(404).end(); return; }
+      next();
+    });
     app.use(express.static(distPath));
     app.use((req, res, next) => {
       if (req.method !== "GET" && req.method !== "HEAD") return next();
@@ -1092,6 +831,10 @@ Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format pers
       res.sendFile(path.join(distPath, "index.html"));
     });
   }
+
+  app.use((error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    res.status(error?.type === 'entity.too.large' ? 413 : 400).json({ error: 'Permintaan tidak dapat diproses.' });
+  });
 
   const server = app.listen(PORT, "0.0.0.0", () => {
     const bootMs = Math.round(performance.now() - bootStart);
@@ -1106,6 +849,7 @@ Keluarkan HANYA JSON object murni (tanpa markdown code block) dengan format pers
     if (viteServer) {
       await viteServer.close().catch(() => {});
     }
+    await closeKnowledgePool().catch(() => {});
     server.close(() => {
       logger.info("EXIT", "Server berhasil dihentikan dengan aman.");
       process.exit(0);

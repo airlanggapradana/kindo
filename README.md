@@ -19,12 +19,12 @@
   </p>
 
   <p align="center">
-    <img src="https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React 19" />
-    <img src="https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/Vite-6.2-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+    <img src="https://img.shields.io/badge/React-19.3-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React 19" />
+    <img src="https://img.shields.io/badge/TypeScript-7.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Vite-8.4-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
     <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
-    <img src="https://img.shields.io/badge/Google_Gemini-3.8_Flash-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Gemini 3.8 Flash" />
-    <img src="https://img.shields.io/badge/Firebase-v12-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase" />
+    <img src="https://img.shields.io/badge/Google_Gemini-API-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Gemini API" />
+    <img src="https://img.shields.io/badge/Firebase-v13-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase" />
     <img src="https://img.shields.io/badge/Express.js-Backend-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express.js" />
     <img src="https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge" alt="License MIT" />
   </p>
@@ -62,7 +62,7 @@ Melalui digitalisasi **Buku KIA (Kesehatan Ibu dan Anak)** dan instrumen resmi *
     <td width="50%">
       <h3>🤖 Analisis Cerdas Google Gemini AI</h3>
       <ul>
-        <li><b>Model Gemini 3.8 Flash</b>: Menghasilkan interpretasi hasil skrining (Sesuai, Meragukan, atau Penyimpangan) dengan bahasa suportif dan ramah orang tua.</li>
+        <li><b>Model Gemini yang dikonfigurasi server</b>: Menghasilkan interpretasi hasil skrining (Sesuai, Meragukan, atau Penyimpangan) dengan bahasa suportif dan ramah orang tua.</li>
         <li><b>Grounded Clinical Interventions</b>: Didasarkan langsung pada kurikulum intervensi medis Kemenkes RI.</li>
         <li><b>Dual-Layer Resilience Fallback</b>: Otomatis beralih ke <i>Rule-Based Clinical Engine</i> lokal saat kuota API atau koneksi eksternal terganggu (Zero Downtime).</li>
       </ul>
@@ -90,9 +90,9 @@ Melalui digitalisasi **Buku KIA (Kesehatan Ibu dan Anak)** dan instrumen resmi *
     <td width="50%">
       <h3>🗺️ Puskesmas Finder & Geonavigasi</h3>
       <ul>
-        <li>Pencarian Puskesmas terdekat berbasis koordinat GPS pengguna menggunakan Google Maps API dan Gemini Search Grounding.</li>
-        <li>Perhitungan rute berkendara langsung di peta via Google Maps Routes API.</li>
-        <li>Informasi kontak telepon dan alamat faskes lengkap.</li>
+        <li>Pencarian berdasarkan lokasi perangkat, pilihan pin, atau wilayah menggunakan Google Places API (New).</li>
+        <li>Radius 5, 10, atau 25 km dengan jarak garis lurus; navigasi jalan dibuka melalui Google Maps.</li>
+        <li>Hasil fasilitas memakai ID dan koordinat bersumber; kegagalan layanan tidak menghasilkan fasilitas buatan.</li>
       </ul>
     </td>
     <td width="50%">
@@ -124,7 +124,7 @@ flowchart TD
 
     subgraph BFF ["Backend for Frontend (Express.js)"]
         Router["Express API Router"]
-        AIEngine["Gemini AI Service\n(@google/genai 3.8 Flash)"]
+        AIEngine["Gemini AI Service\n(@google/genai)"]
         LocalEngine["Local Rule-Based Fallback Engine"]
         WilayahProxy["Wilayah.id REST Proxy"]
     end
@@ -183,10 +183,11 @@ flowchart LR
 | Komponen               | Teknologi                              | Keterangan                                                              |
 | ---------------------- | -------------------------------------- | ----------------------------------------------------------------------- |
 | **Frontend Framework** | **React 19**, **TypeScript**           | Komponen UI reaktif generasi terbaru dengan kepatuhan tipe ketat        |
-| **Build Tool**         | **Vite 6**                             | _Lightning-fast_ Hot Module Replacement & optimasi aset _production_    |
+| **Build Tool**         | **Vite 8**                             | Hot Module Replacement dan optimasi aset produksi                      |
 | **Styling & Motion**   | **Tailwind CSS v4**, **Motion**        | Styling modern performa tinggi dengan transisi _spring animation_ luwes |
 | **3D Rendering**       | **Three.js**, **React Three Fiber**    | Animasi background 3D interaktif pada Landing Page                      |
-| **AI Engine**          | **@google/genai (Gemini 3.8 Flash)**   | Model AI cepat dan akurat untuk analisis data kuesioner medis           |
+| **AI Engine**          | **@google/genai**                     | Model analisis dan retrieval dikonfigurasi melalui environment          |
+| **Knowledge Rusdi**    | **PostgreSQL + pgvector**, **Docker** | FAQ aplikasi, pencarian semantik, dan statistik formulir tervalidasi    |
 | **Backend & BFF**      | **Express.js**, **Node.js**, **tsx**   | Server REST API modular, proxy regional, dan orkestrasi AI              |
 | **Database & Auth**    | **Firebase Auth**, **Cloud Firestore** | Autentikasi aman dan sinkronisasi chat/dokumen secara _real-time_       |
 | **Maps & Lokasi**      | **@vis.gl/react-google-maps**          | Integrasi Maps JavaScript API & Google Routes API                       |
@@ -233,6 +234,7 @@ kindo/
 ```
 
 Panduan penempatan file ada di [docs/repository.md](docs/repository.md).
+Panduan chatbot Rusdi, Docker, dan konfigurasi provider ada di [docs/rusdi-setup.md](docs/rusdi-setup.md).
 Data di `data/kpsp/` adalah bahan referensi; aplikasi memakai modul di `src/data/`.
 Skrip dalam `archive/` disimpan sebagai riwayat perubahan dan dapat menimpa kode jika dijalankan ulang.
 
@@ -272,10 +274,13 @@ Lalu lengkapi nilai variabel berikut:
 
 ```env
 # Google Gemini API Key (diperoleh dari https://aistudio.google.com)
-GEMINI_API_KEY="AIzaSyYourGeminiApiKeyHere"
+GEMINI_API_KEY="isi_key_server"
+GEMINI_GENERATION_MODEL="isi_model_generatif_yang_tersedia_di_akun"
+RUSDI_GENERATION_MODEL="isi_model_generatif_yang_tersedia_di_akun"
 
-# Google Maps Platform Key (aktifkan Maps JS API dan Routes API di GCP Console)
-GOOGLE_MAPS_PLATFORM_KEY="AIzaSyYourGoogleMapsKeyHere"
+# Pisahkan key server Places/Geocoding dan key browser Maps JavaScript
+GOOGLE_PLACES_SERVER_KEY="isi_key_server"
+VITE_GOOGLE_MAPS_BROWSER_KEY="isi_key_browser_dengan_batas_referrer"
 
 # Port server (opsional, default 3000)
 PORT=3000
@@ -350,7 +355,7 @@ Platform ini dirancang dan dikembangkan dengan dedikasi tinggi oleh mahasiswa **
 - **Ucapan Terima Kasih**:
   - **Kementerian Kesehatan Republik Indonesia (Kemenkes RI)** atas standarisasi instrumen skrining KPSP dan Buku KIA.
   - **Universitas Muhammadiyah Surakarta (UMS)** atas dukungan akademis dan fasilitas riset inovasi.
-  - **Google AI for Developers** atas dukungan teknologi model Google Gemini 3.8 Flash.
+  - **Google AI for Developers** atas dukungan teknologi Google Gemini API.
 
 <div align="center">
   <br />

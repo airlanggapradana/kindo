@@ -1,0 +1,9 @@
+{
+  "indexes": [
+    {"collectionGroup":"messages","queryScope":"COLLECTION","fields":[{"fieldPath":"chatId","order":"ASCENDING"},{"fieldPath":"senderId","order":"ASCENDING"},{"fieldPath":"createdAt","order":"ASCENDING"}]},
+    {"collectionGroup":"messages","queryScope":"COLLECTION","fields":[{"fieldPath":"chatId","order":"ASCENDING"},{"fieldPath":"receiverId","order":"ASCENDING"},{"fieldPath":"createdAt","order":"ASCENDING"}]},
+    {"collectionGroup":"questionnaireResults","queryScope":"COLLECTION","fields":[{"fieldPath":"userId","order":"ASCENDING"},{"fieldPath":"profileId","order":"ASCENDING"}]},
+    {"collectionGroup":"questionnaireResults","queryScope":"COLLECTION","fields":[{"fieldPath":"userId","order":"ASCENDING"},{"fieldPath":"createdAt","order":"DESCENDING"}]}
+  ],
+  "fieldOverrides": []
+}

@@ -3,6 +3,8 @@ import { db } from '../lib/firebase';
 import { 
   collection, 
   query, 
+  or,
+  and,
   where, 
   getDocs, 
   getDoc,
@@ -689,6 +691,7 @@ export default function KonsultasiNakesView({
   useEffect(() => {
     setLoadingContacts(true);
     const targetRole = currentUser.role === 'nakes' ? 'orang_tua' : 'nakes';
+    if (currentUser.role === 'nakes' && !currentUser.isVerified) { setRawUserDocs([]); setLoadingContacts(false); return; }
     const qUsers = query(collection(db, 'users'), where('role', '==', targetRole));
 
     const unsubscribeUsers = onSnapshot(qUsers, (snapshot) => {
@@ -728,7 +731,13 @@ export default function KonsultasiNakesView({
       setChildMap({});
       return;
     }
-    const unsubChildren = onSnapshot(collection(db, 'childProfiles'), (childSnap) => {
+    const assignedParents = rawUserDocs.filter(item => item.data.assignedNakesId === currentUser.uid).map(item => item.docId);
+    if (!assignedParents.length) { setChildMap({}); return; }
+    const namesByParent: Record<string, string> = {};
+    const unsubscribers = [] as (() => void)[];
+    for (let offset = 0; offset < assignedParents.length; offset += 5) {
+      const batch = assignedParents.slice(offset, offset + 5);
+      const unsubChildren = onSnapshot(query(collection(db, 'childProfiles'), where('userId', 'in', batch)), (childSnap) => {
       const nextMap: Record<string, string> = {};
       childSnap.docs.forEach(cDoc => {
         const cData = cDoc.data();
@@ -739,12 +748,16 @@ export default function KonsultasiNakesView({
             : `${cData.name} (${cData.ageInMonths || 0} bln)`;
         }
       });
-      setChildMap(nextMap);
+      for (const uid of batch) delete namesByParent[uid];
+      Object.assign(namesByParent, nextMap);
+      setChildMap({ ...namesByParent });
     }, (cErr) => {
       console.warn('Error listening child profiles:', cErr);
     });
-    return () => unsubChildren();
-  }, [currentUser.role]);
+      unsubscribers.push(unsubChildren);
+    }
+    return () => unsubscribers.forEach(unsubscribe => unsubscribe());
+  }, [currentUser.role, currentUser.uid, rawUserDocs]);
 
   // 3. Real-time listeners for sent & received messages to keep lastMessage, timestamp, and unreadCount live
   useEffect(() => {
@@ -952,7 +965,7 @@ export default function KonsultasiNakesView({
 
     const q = query(
       collection(db, 'messages'),
-      where('chatId', '==', chatId),
+      and(where('chatId', '==', chatId), or(where('senderId', '==', currentUser.uid), where('receiverId', '==', currentUser.uid))),
       orderBy('createdAt', 'asc')
     );
 

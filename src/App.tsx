@@ -1,4 +1,4 @@
-import React, { lazy, useState, useMemo, useEffect, useRef } from 'react';
+import React, { lazy, Suspense, useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AgeCategory, Answer, ChildProfile, UserProfile } from './types';
@@ -12,6 +12,8 @@ import BottomNav from './components/domain/BottomNav';
 import { KindoTransitionCurtain, PageMotionWrapper, KINDO_LOGO_URL } from './components/PageTransition';
 import { useLanguage } from './contexts/LanguageContext';
 import { applySEO, PAGE_SEO } from './lib/seo';
+import DeferredPuskesmasMapModal from './components/DeferredPuskesmasMapModal';
+import type { RusdiAction } from './components/RusdiDock';
 
 const LandingView = lazy(() => import('./components/LandingView'));
 const AuthView = lazy(() => import('./components/AuthView'));
@@ -27,6 +29,7 @@ const ResultView = lazy(() => import('./components/ResultView'));
 const EdukasiTumbuhKembang = lazy(() => import('./components/EdukasiTumbuhKembang'));
 const PrivacyPolicyView = lazy(() => import('./components/PrivacyPolicyView'));
 const TermsOfServiceView = lazy(() => import('./components/TermsOfServiceView'));
+const RusdiDock = lazy(() => import('./components/RusdiDock'));
 
 type ViewState = 'HOME' | 'ONBOARDING' | 'DASHBOARD' | 'QUESTIONNAIRE' | 'RESULT' | 'HISTORY_DETAIL' | 'EDUKASI' | 'NAKES_DASHBOARD' | 'NAKES_CHAT' | 'PARENT_CHAT_LIST' | 'PARENT_CHAT' | 'ADMIN_DASHBOARD';
 
@@ -66,6 +69,7 @@ export default function App() {
   const [unreadCountsBySender, setUnreadCountsBySender] = useState<Record<string, number>>({});
   const [showLanding, setShowLanding] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [rusdiMapOpen, setRusdiMapOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('sidebar_collapsed') === 'true';
@@ -104,7 +108,7 @@ export default function App() {
     }
   }, [view, age, user]);
 
-  const effectiveUid = userProfile?.uid || (typeof window !== 'undefined' ? sessionStorage.getItem('quick_login_override_uid') : null) || user?.uid;
+  const effectiveUid = user?.uid;
 
   useEffect(() => {
     if (!user || !effectiveUid) {
@@ -200,8 +204,7 @@ export default function App() {
         }
         setLoadingProfile(true);
         try {
-          // Fetch user profile to get role (support quick_login_override_uid for accounts with temporary auth rate limits)
-          const targetUid = sessionStorage.getItem('quick_login_override_uid') || currentUser.uid;
+          const targetUid = currentUser.uid;
           const userDocSnap = await getDoc(doc(db, 'users', targetUid));
           let currentRole = 'orang_tua'; // default
           if (userDocSnap.exists()) {
@@ -278,7 +281,6 @@ export default function App() {
           lastActive: serverTimestamp()
         }).catch(() => {});
       }
-      sessionStorage.removeItem('quick_login_override_uid');
       await signOut(auth);
       setUser(null);
       setUserProfile(null);
@@ -1161,6 +1163,18 @@ export default function App() {
           </AnimatePresence>
         </div>
       </main>
+
+      <Suspense fallback={null}>
+        <RusdiDock key={user.uid} currentView={view} onAction={(action: RusdiAction) => {
+          if (action === 'open_puskesmas') { setRusdiMapOpen(true); return; }
+          if (view === 'QUESTIONNAIRE' && Object.keys(answers).length && !window.confirm('Jawaban skrining yang belum disimpan akan ditinggalkan. Lanjutkan?')) return;
+          if (action === 'open_consultation') setView(userProfile?.role === 'nakes' ? 'NAKES_CHAT' : 'PARENT_CHAT_LIST');
+          else if (action === 'open_education') setView('EDUKASI');
+          else if (action === 'open_onboarding' && userProfile?.role === 'orang_tua') setView('ONBOARDING');
+          else setView(userProfile?.role === 'admin' ? 'ADMIN_DASHBOARD' : userProfile?.role === 'nakes' ? 'NAKES_DASHBOARD' : 'DASHBOARD');
+        }} />
+      </Suspense>
+      <DeferredPuskesmasMapModal isOpen={rusdiMapOpen} onClose={() => setRusdiMapOpen(false)} />
 
       {/* Mobile Bottom Navigation (< lg) */}
       {userProfile && (

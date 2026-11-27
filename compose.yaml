@@ -1,0 +1,22 @@
+name: kindo-rusdi
+services:
+  knowledge-db:
+    image: pgvector/pgvector:0.8.7-pg16-bookworm@sha256:484e838076e04939d27d3e176e91c86eea96236126023be8d3059761122e579f
+    environment:
+      POSTGRES_DB: kindo_knowledge
+      POSTGRES_USER: kindo_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      RUSDI_DB_PASSWORD: ${RUSDI_DB_PASSWORD:?Set RUSDI_DB_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${RUSDI_DB_PORT:-15432}:5432"
+    volumes:
+      - rusdi-postgres:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kindo_admin -d kindo_knowledge"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    restart: unless-stopped
+volumes:
+  rusdi-postgres:
