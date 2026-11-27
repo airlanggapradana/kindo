@@ -3,6 +3,7 @@ node_modules/
 build/
 dist/
 coverage/
+tests/firestore/.firestore.rules
 *.tsbuildinfo
 
 # Local configuration and secrets

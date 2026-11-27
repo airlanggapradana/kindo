@@ -5,6 +5,7 @@ import { QUESTIONS_DATA } from '../data/questions';
 import { cn, formatAgeCategory } from '../lib/utils';
 import { Sparkles, Loader2, Download, ArrowLeft, Check, RefreshCcw, ChevronDown, ChevronUp, MapPin, MessageSquare, Activity } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { authorizedFetch } from '../lib/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import StatusBadge from './domain/StatusBadge';
 import ScoreRing from './domain/ScoreRing';
@@ -142,7 +143,7 @@ export default function ResultView({
         jawaban: answers[q.id] === 1 ? 'Iya' : 'Tidak'
       }));
       
-      const res = await fetch('/api/analyze-questionnaire', {
+      const res = await authorizedFetch('/api/analyze-questionnaire', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ageCategory: age, totalScore, qna })
@@ -170,7 +171,7 @@ export default function ResultView({
       const translateMissing = async () => {
         setLoadingAi(true);
         try {
-          const res = await fetch('/api/translate-analysis', {
+          const res = await authorizedFetch('/api/translate-analysis', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: aiAnalysis, targetLang: 'en' })

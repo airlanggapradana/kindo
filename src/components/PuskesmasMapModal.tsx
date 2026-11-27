@@ -1,530 +1,179 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'motion/react';
-import { X, MapPin, Map as MapIcon, Loader2, Sparkles, Navigation, Phone } from 'lucide-react';
-import { APIProvider, Map, AdvancedMarker, useMap, useMapsLibrary, type MapMouseEvent } from '@vis.gl/react-google-maps';
+import { AnimatePresence, motion } from 'motion/react';
+import { APIProvider, Map, AdvancedMarker, useMap, type MapMouseEvent } from '@vis.gl/react-google-maps';
+import { X, MapPin, Navigation, Search, Loader2, ExternalLink, LocateFixed } from 'lucide-react';
+import { authorizedFetch } from '../lib/api';
 
-const API_KEY = process.env.GOOGLE_MAPS_PLATFORM_KEY || '';
+type Point = { lat: number; lng: number };
+type Origin = Point & { source: 'device' | 'manual' | 'area'; accuracy?: number; label?: string };
+type Facility = Point & { id: string; name: string; address: string | null; distanceMeters: number; dataSource: 'google_places' };
+const browserKey = import.meta.env.VITE_GOOGLE_MAPS_BROWSER_KEY || '';
+const inputClass = 'min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-base text-slate-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100 dark:border-slate-600 dark:bg-slate-800 dark:text-white';
+const buttonClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50';
 
-interface PuskesmasMapModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-interface Puskesmas {
-  name: string;
-  address: string;
-  distance: string;
-  phone: string;
-  lat: number;
-  lng: number;
-}
-
-function RouteDisplay({ origin, destination, onError }: {
-  origin?: google.maps.LatLngLiteral | null;
-  destination?: google.maps.LatLngLiteral | null;
-  onError: (error: string | null) => void;
-}) {
+function MapCenter({ point }: { point: Point }) {
   const map = useMap();
-  const routesLib = useMapsLibrary('routes');
-  const polylinesRef = useRef<google.maps.Polyline[]>([]);
-
-  useEffect(() => {
-    if (!routesLib || !map || !origin || !destination) {
-      polylinesRef.current.forEach(p => p.setMap(null));
-      polylinesRef.current = [];
-      return;
-    }
-    
-    onError(null);
-    routesLib.Route.computeRoutes({
-      origin: { lat: origin.lat, lng: origin.lng },
-      destination: { lat: destination.lat, lng: destination.lng },
-      travelMode: 'DRIVING',
-      fields: ['path', 'distanceMeters', 'durationMillis', 'viewport'],
-      routingPreference: 'TRAFFIC_AWARE'
-    }).then(({ routes }: any) => {
-      polylinesRef.current.forEach(p => p.setMap(null));
-      if (routes?.[0]) {
-        const newPolylines = routes[0].createPolylines();
-        newPolylines.forEach((p: any) => p.setMap(map));
-        polylinesRef.current = newPolylines;
-        if (routes[0].viewport) map.fitBounds(routes[0].viewport);
-      }
-    }).catch((error: any) => {
-      console.error("Directions routing failed:", error);
-      onError("Fitur rute (Routes API) belum diaktifkan pada project Google Cloud Platform (API Key) yang Anda gunakan.");
-    });
-
-    return () => polylinesRef.current.forEach(p => p.setMap(null));
-  }, [routesLib, map, origin, destination, onError]);
-
+  useEffect(() => { if (map) { map.panTo(point); map.setZoom(14); } }, [map, point]);
   return null;
 }
 
-function MapUpdater({ center }: { center: google.maps.LatLngLiteral }) {
-  const map = useMap();
-  useEffect(() => {
-    if (map) {
-      map.panTo(center);
-    }
-  }, [map, center]);
-  return null;
-}
+export default function PuskesmasMapModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [origin, setOrigin] = useState<Origin | null>(null);
+  const [coarse, setCoarse] = useState<Origin | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationError, setLocationError] = useState('');
+  const [radius, setRadius] = useState(5000);
+  const [results, setResults] = useState<Facility[]>([]);
+  const [selected, setSelected] = useState<Facility | null>(null);
+  const [status, setStatus] = useState('idle');
+  const [searchError, setSearchError] = useState('');
+  const [refresh, setRefresh] = useState(0);
+  const [areaQuery, setAreaQuery] = useState('');
+  const [areas, setAreas] = useState<(Point & { id: string; label: string })[]>([]);
+  const [areaError, setAreaError] = useState('');
+  const [areaLoading, setAreaLoading] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const closeHandler = useRef(onClose);
+  closeHandler.current = onClose;
+  const locationRequest = useRef(0);
+  const searchRequest = useRef(0);
+  const geoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const areaController = useRef<AbortController | null>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
 
-export default function PuskesmasMapModal({ isOpen, onClose }: PuskesmasMapModalProps) {
-  const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
-  const [mapCenter, setMapCenter] = useState<google.maps.LatLngLiteral>({ lat: -6.2088, lng: 106.8456 }); // Default Jakarta
-  
-  const [aiResult, setAiResult] = useState<Puskesmas[] | null>(null);
-  const [aiError, setAiError] = useState<string | null>(null);
-  const [selectedPuskesmas, setSelectedPuskesmas] = useState<Puskesmas | null>(null);
-  const [loadingAi, setLoadingAi] = useState(false);
-  const [isFallback, setIsFallback] = useState(false);
-  const [routeError, setRouteError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
+  const locate = useCallback((highAccuracy = false) => {
+    const requestId = ++locationRequest.current;
+    if (geoTimer.current) clearTimeout(geoTimer.current);
+    setOrigin(null); setCoarse(null); setLocationError(''); setLocationLoading(true);
+    const fail = (message: string) => {
+      if (requestId !== locationRequest.current) return;
+      locationRequest.current++; if (geoTimer.current) clearTimeout(geoTimer.current);
+      setLocationLoading(false); setLocationError(message);
+    };
+    if (!navigator.geolocation) { fail('Perangkat belum menyediakan lokasi. Cari wilayah atau pilih titik pada peta.'); return; }
+    geoTimer.current = setTimeout(() => fail('Lokasi belum ditemukan. Coba deteksi ulang atau pilih wilayah.'), 7500);
+    navigator.geolocation.getCurrentPosition(position => {
+      if (requestId !== locationRequest.current) return;
+      locationRequest.current++; if (geoTimer.current) clearTimeout(geoTimer.current);
+      setLocationLoading(false);
+      const point: Origin = { lat: position.coords.latitude, lng: position.coords.longitude, source: 'device', accuracy: position.coords.accuracy };
+      if (point.accuracy! > 1000) { setCoarse(point); setLocationError('Lokasi perangkat masih terlalu luas. Pilih titik di peta atau konfirmasikan lokasi perkiraan.'); }
+      else setOrigin(point);
+    }, error => fail(error.code === 1 ? 'Izin lokasi belum diberikan. Kamu tetap bisa mencari wilayah atau memilih titik pada peta.' : 'Lokasi perangkat belum tersedia. Coba lagi atau pilih wilayah.'), { enableHighAccuracy: highAccuracy, timeout: 7000, maximumAge: 30000 });
   }, []);
+
+  const chooseOrigin = (point: Origin) => {
+    locationRequest.current++; if (geoTimer.current) clearTimeout(geoTimer.current);
+    setLocationLoading(false); setLocationError(''); setCoarse(null); setOrigin(point); setRadius(5000); setSelected(null);
+  };
 
   useEffect(() => {
     if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    setAreaLoading(false); setAreaError(''); setAreas([]);
+    document.body.style.overflow = 'hidden'; closeButton.current?.focus(); locate();
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeHandler.current();
+      if (event.key === 'Tab') {
+        const panel = closeButton.current?.closest('[role="dialog"]');
+        const focusable = panel?.querySelectorAll<HTMLElement>('button:not([disabled]),input,select,a[href]');
+        if (!focusable?.length) return;
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
       }
     };
-    document.addEventListener('keydown', handleKeyDown);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', keydown);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = prevOverflow;
+      locationRequest.current++; if (geoTimer.current) clearTimeout(geoTimer.current);
+      areaController.current?.abort(); document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', keydown); previousFocus?.focus();
     };
-  }, [isOpen, onClose]);
-
-  const [locationSource, setLocationSource] = useState<'gps' | 'ip' | 'manual' | 'default' | null>(null);
-  const [detectedCity, setDetectedCity] = useState<string | null>(null);
-  const locationReqIdRef = useRef(0);
-  const geoTimerRef = useRef<number | null>(null);
-
-  const clearGeoTimer = () => {
-    if (geoTimerRef.current !== null) {
-      window.clearTimeout(geoTimerRef.current);
-      geoTimerRef.current = null;
-    }
-  };
-
-  const applyLocation = (
-    loc: google.maps.LatLngLiteral,
-    source: 'gps' | 'ip' | 'manual' | 'default',
-    city?: string | null,
-  ) => {
-    setUserLocation(loc);
-    setMapCenter(loc);
-    setLocationError(null);
-    setLocationSource(source);
-    setDetectedCity(city || null);
-    fetchNearbyPuskesmas(loc);
-  };
-
-  const fallbackWithIpOrJakarta = async (reqId: number) => {
-    const defaultLoc = { lat: -6.2088, lng: 106.8456 };
-    try {
-      const controller = new AbortController();
-      const ipTimer = window.setTimeout(() => controller.abort(), 3500);
-      const res = await fetch('https://get.geojs.io/v1/ip/geo.json', {
-        signal: controller.signal,
-      });
-      window.clearTimeout(ipTimer);
-
-      if (reqId !== locationReqIdRef.current) return;
-
-      if (res.ok) {
-        const data = await res.json();
-        const lat = parseFloat(data.latitude);
-        const lng = parseFloat(data.longitude);
-        if (Number.isFinite(lat) && Number.isFinite(lng)) {
-          applyLocation({ lat, lng }, 'ip', data.city || data.region || null);
-          return;
-        }
-      }
-    } catch (ipErr) {
-      console.warn('IP geolocation fallback unavailable:', ipErr);
-    }
-
-    if (reqId !== locationReqIdRef.current) return;
-    applyLocation(defaultLoc, 'default', null);
-  };
-
-  const requestLocation = () => {
-    clearGeoTimer();
-    const reqId = ++locationReqIdRef.current;
-    setLocationError(null);
-    setLocationSource(null);
-    setDetectedCity(null);
-    setUserLocation(null);
-
-    if ('geolocation' in navigator) {
-      let settled = false;
-
-      const handleFailure = (reason?: unknown) => {
-        if (settled || reqId !== locationReqIdRef.current) return;
-        settled = true;
-        clearGeoTimer();
-        console.warn('Geolocation denied, unavailable, or timed out:', reason);
-        fallbackWithIpOrJakarta(reqId);
-      };
-
-      // Hard failsafe timer because desktop Chromium forks can hang forever on getCurrentPosition
-      geoTimerRef.current = window.setTimeout(() => {
-        handleFailure('Browser geolocation timeout (failsafe)');
-      }, 6500);
-
-      try {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            if (settled || reqId !== locationReqIdRef.current) return;
-            settled = true;
-            clearGeoTimer();
-            const loc = {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude,
-            };
-            applyLocation(loc, 'gps', null);
-          },
-          (error) => {
-            handleFailure(error);
-          },
-          {
-            enableHighAccuracy: false,
-            timeout: 6000,
-            maximumAge: 300000,
-          },
-        );
-      } catch (err) {
-        handleFailure(err);
-      }
-    } else {
-      fallbackWithIpOrJakarta(reqId);
-    }
-  };
-
-  const handleMapClick = (event: MapMouseEvent) => {
-    const clicked = event.detail?.latLng;
-    if (!clicked) return;
-    clearGeoTimer();
-    locationReqIdRef.current += 1;
-    applyLocation({ lat: clicked.lat, lng: clicked.lng }, 'manual', null);
-  };
-
-  const fetchNearbyPuskesmas = async (loc: google.maps.LatLngLiteral) => {
-    setLoadingAi(true);
-    setAiResult(null);
-    setAiError(null);
-    setSelectedPuskesmas(null);
-    setRouteError(null);
-    try {
-      const res = await fetch('/api/nearby-puskesmas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat: loc.lat, lng: loc.lng }),
-      });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        setAiError(data.error || "Terjadi kesalahan pada layanan pencarian. Silakan coba beberapa saat lagi.");
-        return;
-      }
-
-      if (data.result && data.result.puskesmas) {
-        setAiResult(data.result.puskesmas);
-        setIsFallback(!!data.isFallback);
-      } else {
-        setAiError("Gagal memproses rekomendasi puskesmas. Silakan coba lagi.");
-      }
-    } catch (err) {
-      console.error(err);
-      setAiError("Terjadi kesalahan koneksi saat mencari puskesmas.");
-    } finally {
-      setLoadingAi(false);
-    }
-  };
+  }, [isOpen, locate]);
 
   useEffect(() => {
-    if (isOpen) {
-      requestLocation();
-    } else {
-      clearGeoTimer();
-      locationReqIdRef.current += 1;
-    }
-    return () => {
-      clearGeoTimer();
-    };
-  }, [isOpen]);
+    const requestId = ++searchRequest.current;
+    setResults([]); setSelected(null); setSearchError('');
+    if (!isOpen || !origin) { setStatus('idle'); return; }
+    const controller = new AbortController(); setStatus('loading');
+    authorizedFetch('/api/nearby-puskesmas', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]),
+      body: JSON.stringify({ lat: origin.lat, lng: origin.lng, originSource: origin.source, accuracyMeters: origin.accuracy, radiusMeters: radius }),
+    }).then(async response => {
+      const data = await response.json();
+      if (requestId !== searchRequest.current || controller.signal.aborted) return;
+      if (!response.ok) { setStatus(data.status || 'provider_unavailable'); setSearchError(data.error || 'Pencarian belum berhasil. Coba lagi atau buka Google Maps.'); return; }
+      setResults(data.result?.puskesmas || []); setStatus(data.status);
+    }).catch(() => {
+      if (controller.signal.aborted || requestId !== searchRequest.current) return;
+      setStatus('provider_unavailable'); setSearchError('Pencarian belum berhasil. Coba lagi atau buka Google Maps.');
+    });
+    return () => { searchRequest.current++; controller.abort(); };
+  }, [isOpen, origin, radius, refresh]);
 
-  if (!mounted) return null;
+  const searchArea = async (event: React.FormEvent) => {
+    event.preventDefault(); areaController.current?.abort();
+    const controller = new AbortController(); areaController.current = controller;
+    setAreaError(''); setAreas([]); setAreaLoading(true);
+    try {
+      const response = await authorizedFetch(`/api/puskesmas/areas?query=${encodeURIComponent(areaQuery.trim())}`, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(8000)]) });
+      const data = await response.json(); if (controller.signal.aborted) return;
+      if (!response.ok) throw new Error(data.error);
+      setAreas(data.areas); if (!data.areas.length) setAreaError('Wilayah belum ditemukan. Coba nama kecamatan beserta kotanya.');
+    } catch (error) { if (!controller.signal.aborted) setAreaError(error instanceof Error ? error.message : 'Wilayah belum ditemukan.'); }
+    finally { if (!controller.signal.aborted) setAreaLoading(false); }
+  };
 
-  return createPortal(
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 w-screen h-screen overflow-hidden">
-          {/* Full-screen Dark Overlay Backdrop */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={onClose}
-            className="fixed inset-0 w-full h-full bg-black/75 backdrop-blur-sm cursor-pointer"
-            aria-label="Tutup modal"
-          />
-          
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 16 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 bg-white dark:bg-slate-900 w-full max-w-5xl rounded-2xl md:rounded-[32px] shadow-2xl overflow-hidden flex flex-col h-[85vh] md:h-[700px] max-h-[95vh] border border-slate-200 dark:border-slate-800 pointer-events-auto"
-          >
-            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800 shrink-0">
-              <div>
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
-                  <MapIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  Puskesmas Terdekat
-                </h2>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">
-                  Rekomendasi faskes untuk skrining perkembangan anak.
-                </p>
-              </div>
-              <button 
-                onClick={onClose}
-                className="p-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-              </button>
+  const mapsQuery = origin ? `puskesmas near ${origin.lat},${origin.lng}` : `puskesmas ${areaQuery || 'terdekat'} Indonesia`;
+  const mapsUrl = `https://www.google.com/maps/search/?${new URLSearchParams({ api: '1', query: mapsQuery })}`;
+  const mapClick = (event: MapMouseEvent) => { if (event.detail.latLng) chooseOrigin({ ...event.detail.latLng, source: 'manual' }); };
+
+  return createPortal(<AnimatePresence>{isOpen && (
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/65 p-2 sm:p-5" onClick={onClose}>
+      <motion.section role="dialog" aria-modal="true" aria-labelledby="puskesmas-title" initial={{ opacity: 0, scale: .97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} onClick={event => event.stopPropagation()} className="flex h-[92dvh] max-h-[850px] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white text-slate-900 shadow-2xl dark:bg-slate-900 dark:text-white">
+        <header className="flex items-start justify-between border-b border-slate-200 p-4 sm:p-6 dark:border-slate-700">
+          <div><h2 id="puskesmas-title" className="flex items-center gap-2 text-xl font-bold"><MapPin className="h-5 w-5 text-teal-600" />Puskesmas Terdekat</h2><p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Pilih lokasi, lalu temukan fasilitas dari sumber peta.</p></div>
+          <button ref={closeButton} aria-label="Tutup peta" onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800"><X className="h-5 w-5" /></button>
+        </header>
+        <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+          <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 md:max-w-md">
+            <button onClick={() => locate(true)} className={buttonClass}><LocateFixed className="h-4 w-4" />{locationLoading ? 'Mencari lokasi…' : 'Deteksi ulang lokasi'}</button>
+            {locationError && <p role="status" className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">{locationError}</p>}
+            {coarse && <button onClick={() => chooseOrigin(coarse)} className="mt-2 min-h-11 text-sm font-semibold text-teal-700 dark:text-teal-300">Gunakan lokasi perkiraan ini (±{Math.round(coarse.accuracy!)} m)</button>}
+            {origin && <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{origin.source === 'area' ? `Dari pusat area: ${origin.label}` : origin.source === 'manual' ? 'Dari titik yang kamu pilih di peta' : `Lokasi perangkat, akurasi ±${Math.round(origin.accuracy || 0)} m`}</p>}
+            {browserKey && <button onClick={() => setShowMap(value => !value)} className="mt-2 min-h-11 text-sm font-semibold text-teal-700 dark:text-teal-300 md:hidden">{showMap ? 'Sembunyikan peta' : 'Pilih titik pada peta'}</button>}
+            <form onSubmit={searchArea} className="mt-4 space-y-2">
+              <label htmlFor="puskesmas-area" className="text-sm font-semibold">Cari kelurahan atau kecamatan</label>
+              <div className="flex gap-2"><input id="puskesmas-area" value={areaQuery} onChange={event => setAreaQuery(event.target.value)} minLength={3} maxLength={150} placeholder="Contoh: Sidorejo, Salatiga" className={inputClass} required /><button aria-label="Cari wilayah" disabled={areaLoading} className={buttonClass}>{areaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}</button></div>
+            </form>
+            {areaError && <p role="status" className="mt-2 text-sm text-amber-700 dark:text-amber-300">{areaError}</p>}
+            {areas.map(area => <button key={area.id} onClick={() => { chooseOrigin({ lat: area.lat, lng: area.lng, label: area.label, source: 'area' }); setAreas([]); }} className="mt-2 min-h-11 w-full rounded-xl border border-teal-200 p-3 text-left text-sm hover:bg-teal-50 dark:hover:bg-teal-950">Gunakan area {area.label}</button>)}
+            <label className="mt-4 flex items-center justify-between gap-3 text-sm font-semibold">Radius pencarian<select value={radius} onChange={event => setRadius(Number(event.target.value))} className="min-h-11 rounded-xl border border-slate-300 bg-transparent px-3 dark:border-slate-600"><option value={5000}>5 km</option><option value={10000}>10 km</option><option value={25000}>25 km</option></select></label>
+            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-teal-700 px-4 text-sm font-semibold text-teal-700 dark:border-teal-300 dark:text-teal-300"><ExternalLink className="h-4 w-4" />Buka Google Maps</a>
+            <div aria-live="polite" className="mt-4 space-y-3">
+              {status === 'idle' && <p className="text-sm text-slate-500">Tentukan lokasi perangkat, wilayah, atau titik pada peta untuk memulai pencarian.</p>}
+              {status === 'loading' && <p role="status" className="flex items-center gap-2 text-sm text-teal-700 dark:text-teal-300"><Loader2 className="h-5 w-5 animate-spin" />Mencari puskesmas…</p>}
+              {searchError && <div role="alert" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200"><p>{searchError}</p><button onClick={() => setRefresh(value => value + 1)} className="mt-2 min-h-11 font-semibold underline">Coba lagi</button></div>}
+              {status === 'empty' && <p className="rounded-xl bg-slate-100 p-3 text-sm dark:bg-slate-800">Belum ada hasil puskesmas yang sesuai dalam radius {radius / 1000} km. Perluas radius atau koreksi titik pencarian.</p>}
+              {results.length > 0 && <p className="text-sm text-slate-500">Hasil yang ditemukan, diurutkan menurut jarak garis lurus.</p>}
+              {results.map(facility => <article key={facility.id} className={`rounded-xl border p-4 ${selected?.id === facility.id ? 'border-teal-600 bg-teal-50 dark:bg-teal-950' : 'border-slate-200 dark:border-slate-700'}`}>
+                <button onClick={() => setSelected(facility)} className="min-h-11 w-full text-left"><span className="block font-bold">{facility.name}</span><span className="mt-1 block text-sm text-slate-500">{(facility.distanceMeters / 1000).toFixed(1)} km garis lurus</span></button>
+                {facility.address && <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{facility.address}</p>}
+                <a href={`https://www.google.com/maps/dir/?${new URLSearchParams({ api: '1', destination: `${facility.lat},${facility.lng}`, destination_place_id: facility.id, ...(origin ? { origin: `${origin.lat},${origin.lng}` } : {}) })}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-teal-700 dark:text-teal-300"><Navigation className="h-4 w-4" />Lihat rute di Google Maps</a>
+              </article>)}
+              {results.length > 0 && <div className="flex items-center gap-2 text-xs text-slate-500"><span>Data dari</span><img src="https://maps.gstatic.com/mapfiles/api-3/images/google_gray.svg" alt="Google" className="h-5 w-auto" /></div>}
             </div>
-
-            <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
-              {/* Sidebar list (Gemini recommendation) */}
-              <div className="w-full md:w-[45%] h-1/2 md:h-full bg-slate-50/50 dark:bg-slate-900 overflow-y-auto border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800 flex-shrink-0">
-                {locationError ? (
-                  <div className="p-8 flex flex-col items-center justify-center text-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center">
-                      <MapPin className="w-6 h-6 text-rose-500 dark:text-rose-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2">Izin Lokasi Ditolak</h3>
-                      <p className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
-                        {locationError}
-                      </p>
-                      <button 
-                        onClick={requestLocation}
-                        className="px-4 py-2 bg-slate-900 dark:bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-emerald-700 transition"
-                      >
-                        Coba Lagi
-                      </button>
-                    </div>
-                  </div>
-                ) : !userLocation ? (
-                  <div className="p-8 flex flex-col items-center justify-center text-slate-500 gap-3 h-full text-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
-                    <span className="text-sm font-medium">Mencari lokasi Anda...</span>
-                    <span className="text-xs text-slate-400 max-w-[240px]">
-                      Anda juga dapat langsung mengklik titik lokasi Anda pada peta di samping.
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        clearGeoTimer();
-                        const reqId = ++locationReqIdRef.current;
-                        fallbackWithIpOrJakarta(reqId);
-                      }}
-                      className="mt-1 px-3.5 py-1.5 text-xs font-semibold text-[#0F766E] dark:text-[#5EEAD4] bg-teal-50 dark:bg-teal-950/50 hover:bg-teal-100 dark:hover:bg-teal-900/50 rounded-lg transition-colors cursor-pointer"
-                    >
-                      Gunakan Perkiraan Lokasi
-                    </button>
-                  </div>
-                ) : loadingAi ? (
-                  <div className="p-8 flex flex-col items-center justify-center text-slate-500 gap-4 h-full">
-                    <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-2">
-                      <Sparkles className="w-6 h-6 text-emerald-600 animate-pulse" />
-                    </div>
-                    <span className="text-sm font-medium text-center">Mencari puskesmas terdekat...</span>
-                    <Loader2 className="w-6 h-6 animate-spin text-emerald-600/50" />
-                  </div>
-                ) : aiError ? (
-                  <div className="p-8 flex flex-col items-center justify-center text-slate-500 gap-3 h-full text-center">
-                    <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center mb-2">
-                      <X className="w-6 h-6 text-rose-500" />
-                    </div>
-                    <span className="text-sm font-medium text-rose-500">{aiError}</span>
-                    <button onClick={() => userLocation && fetchNearbyPuskesmas(userLocation)} className="mt-4 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-semibold transition">
-                       Coba Lagi
-                    </button>
-                  </div>
-                ) : aiResult ? (
-                  <div className="p-4 sm:p-6 flex flex-col h-full">
-                    {/* Location Fallback / Hint Banner */}
-                    {locationSource === 'default' && (
-                      <div className="mb-3 p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs text-[#B45309] dark:text-amber-300 flex items-start justify-between gap-2">
-                        <div className="flex items-start gap-2">
-                          <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-[#B45309]" />
-                          <span><strong>Lokasi GPS tidak merespons.</strong> Menampilkan wilayah Jakarta. Klik titik di peta untuk memilih lokasi Anda.</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={requestLocation}
-                          className="text-[11px] font-bold text-[#0F766E] dark:text-[#5EEAD4] hover:underline shrink-0 cursor-pointer"
-                        >
-                          Coba Lagi
-                        </button>
-                      </div>
-                    )}
-                    {locationSource === 'ip' && (
-                      <div className="mb-3 p-3 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 rounded-xl text-xs text-[#0F766E] dark:text-teal-300 flex items-start justify-between gap-2">
-                        <div className="flex items-start gap-2">
-                          <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-[#0F766E] dark:text-teal-400" />
-                          <span>
-                            Lokasi diperkirakan dari jaringan internet{detectedCity ? ` (${detectedCity})` : ''}. Klik titik pada peta untuk akurasi lebih tepat.
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={requestLocation}
-                          className="text-[11px] font-bold text-[#0F766E] dark:text-[#5EEAD4] hover:underline shrink-0 cursor-pointer"
-                        >
-                          Deteksi GPS
-                        </button>
-                      </div>
-                    )}
-                    {locationSource === 'manual' && (
-                      <div className="mb-3 p-2.5 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-xl text-xs text-emerald-700 dark:text-emerald-300 flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                          <span>Menampilkan puskesmas di sekitar titik yang Anda pilih di peta.</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={requestLocation}
-                          className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:underline shrink-0 cursor-pointer"
-                        >
-                          Reset GPS
-                        </button>
-                      </div>
-                    )}
-                    {/* Data source badge */}
-                    {isFallback && (
-                      <div className="mb-3 p-2.5 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-xl text-xs text-blue-700 dark:text-blue-300 flex items-center gap-2">
-                        <MapPin className="w-3.5 h-3.5 shrink-0 text-blue-500" />
-                        <span>Menampilkan data referensi. Aktifkan Maps API untuk data real-time.</span>
-                      </div>
-                    )}
-                    <div className="space-y-3 overflow-y-auto flex-1 pr-2 pb-4">
-                      {aiResult.map((p, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            setSelectedPuskesmas(p);
-                            setMapCenter({ lat: p.lat, lng: p.lng });
-                          }}
-                          className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer ${selectedPuskesmas?.name === p.name ? 'border-[#0F766E] bg-[#F0FDFA] dark:bg-teal-950/30 ring-2 ring-[#0F766E]/30' : 'border-slate-200 dark:border-slate-700 hover:border-teal-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
-                        >
-                           <h4 className="font-bold text-slate-900 dark:text-slate-100 flex items-start justify-between gap-2">
-                              <span>{p.name}</span>
-                              <span className="shrink-0 text-[10px] font-bold px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500">{p.distance}</span>
-                           </h4>
-                           <p className="text-xs text-slate-500 mt-2 line-clamp-2">{p.address}</p>
-                           {p.phone && p.phone !== '-' && (
-                              <div className="flex items-center gap-1.5 mt-2.5 text-xs font-medium text-slate-600 dark:text-slate-400">
-                                 <Phone className="w-3 h-3" /> {p.phone}
-                              </div>
-                           )}
-                           {selectedPuskesmas?.name === p.name && (
-                              <div className="mt-3">
-                                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/50 py-1.5 px-3 rounded-lg w-max">
-                                  <Navigation className="w-3.5 h-3.5" /> Rute Ditampilkan
-                                </div>
-                                {routeError && (
-                                  <div className="mt-2 text-[10px] text-rose-500 bg-rose-50 dark:bg-rose-900/20 p-2 text-left rounded-lg border border-rose-100 dark:border-rose-800/50 font-medium line-clamp-3">
-                                    {routeError}
-                                  </div>
-                                )}
-                              </div>
-                           )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-
-              {/* Map Area */}
-              <div className="w-full md:w-[55%] flex-1 relative bg-slate-100 dark:bg-slate-800">
-                {!API_KEY || API_KEY === 'YOUR_API_KEY' ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm">
-                    <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-2">Google Maps API Key Required</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium mb-4 text-left max-w-sm">
-                      <strong>1.</strong> Dapatkan API Key <a href="https://console.cloud.google.com/google/maps-apis/start" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">di sini</a>.<br/>
-                      <strong>2.</strong> Buka <strong>Settings</strong> (⚙️) di pojok kanan atas AI Studio.<br/>
-                      <strong>3.</strong> Pilih <strong>Secrets</strong>, tambahkan <code>GOOGLE_MAPS_PLATFORM_KEY</code>.<br/>
-                      <strong>4.</strong> Masukkan API Key dan tekan <strong>Enter</strong>.
-                    </p>
-                  </div>
-                ) : (
-                  <APIProvider apiKey={API_KEY} version="weekly">
-                    <Map
-                      defaultCenter={{ lat: -6.2088, lng: 106.8456 }} // Default Jakarta
-                      defaultZoom={14}
-                      mapId="PUSKESMAS_MAP_ID"
-                      internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
-                      style={{width: '100%', height: '100%'}}
-                      gestureHandling="greedy"
-                      onClick={handleMapClick}
-                    >
-                      <MapUpdater center={mapCenter} />
-                      {userLocation && (
-                        <AdvancedMarker position={userLocation} title="Lokasi Anda" zIndex={10}>
-                          <div className="w-5 h-5 bg-blue-500 rounded-full border-[3px] border-white shadow-[0_0_0_4px_rgba(59,130,246,0.2)]" />
-                        </AdvancedMarker>
-                      )}
-                      
-                      {aiResult?.map((p, idx) => (
-                         <AdvancedMarker 
-                           key={idx} 
-                           position={{ lat: p.lat, lng: p.lng }}
-                           title={p.name}
-                           onClick={() => {
-                             setSelectedPuskesmas(p);
-                             setMapCenter({ lat: p.lat, lng: p.lng });
-                           }}
-                           zIndex={selectedPuskesmas?.name === p.name ? 5 : 1}
-                         >
-                           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white shadow-md border-2 border-white transition-transform ${selectedPuskesmas?.name === p.name ? 'bg-emerald-500 scale-110' : 'bg-slate-400 scale-100 hover:scale-110'}`}>
-                              <MapIcon className="w-4 h-4" />
-                           </div>
-                         </AdvancedMarker>
-                      ))}
-                      
-                      {selectedPuskesmas && userLocation && (
-                         <RouteDisplay 
-                           origin={userLocation} 
-                           destination={{ lat: selectedPuskesmas.lat, lng: selectedPuskesmas.lng }} 
-                           onError={setRouteError}
-                         />
-                      )}
-                    </Map>
-                  </APIProvider>
-                )}
-              </div>
-            </div>
-          </motion.div>
+          </div>
+          <div className={`${showMap ? 'block' : 'hidden'} min-h-64 flex-1 border-l border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800 md:block`}>
+            {browserKey ? <APIProvider apiKey={browserKey} version="weekly"><Map defaultCenter={{ lat: -2.5, lng: 118 }} defaultZoom={4} mapId={import.meta.env.VITE_GOOGLE_MAP_ID || 'DEMO_MAP_ID'} style={{ width: '100%', height: '100%' }} gestureHandling="greedy" onClick={mapClick}>
+              {origin && <><MapCenter point={selected || origin} /><AdvancedMarker position={origin} title="Titik pencarian"><div className="h-5 w-5 rounded-full border-4 border-white bg-blue-600 shadow" /></AdvancedMarker></>}
+              {results.map(facility => <AdvancedMarker key={facility.id} position={facility} title={facility.name} onClick={() => setSelected(facility)}><MapPin className="h-8 w-8 fill-teal-600 text-white" /></AdvancedMarker>)}
+            </Map></APIProvider> : <div className="flex h-full items-center justify-center p-8 text-center text-sm text-slate-500">Peta dalam aplikasi belum tersedia. Kamu tetap dapat memilih wilayah atau membuka Google Maps.</div>}
+          </div>
         </div>
-      )}
-    </AnimatePresence>,
-    document.body
-  );
+      </motion.section>
+    </div>
+  )}</AnimatePresence>, document.body);
 }

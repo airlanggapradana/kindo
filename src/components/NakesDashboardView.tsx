@@ -41,6 +41,7 @@ export default function NakesDashboardView({
   const { t } = useLanguage();
 
   const fetchData = async () => {
+    if (!userProfile.isVerified) { setParents([]); setLoading(false); return; }
     try {
       setLoading(true);
       const usersQ = query(collection(db, 'users'), where('role', '==', 'orang_tua'));
@@ -48,14 +49,15 @@ export default function NakesDashboardView({
       
       const parentPromises = usersSnap.docs.map(async (userDoc) => {
         const userData = userDoc.data() as UserProfile;
-        const uid = userData.uid || userDoc.id;
+        const uid = userDoc.id;
+        if (userData.assignedNakesId !== userProfile.uid) return { ...userData, uid, children: [] };
         const childrenQ = query(collection(db, 'childProfiles'), where('userId', '==', uid));
         const childrenSnap = await getDocs(childrenQ);
         
         const childrenWithHistoryPromises = childrenSnap.docs.map(async (docSnap) => {
           const childData = { id: docSnap.id, ...docSnap.data() } as ChildProfile;
           
-          const historyQ = query(collection(db, 'questionnaireResults'), where('profileId', '==', docSnap.id));
+          const historyQ = query(collection(db, 'questionnaireResults'), where('profileId', '==', docSnap.id), where('userId', '==', uid));
           const historySnap = await getDocs(historyQ);
           const historyData = historySnap.docs.map(hDoc => {
             const data = hDoc.data();
@@ -305,7 +307,7 @@ export default function NakesDashboardView({
                       
                       <div className="mt-3">
                          {parent.children.length === 0 ? (
-                            <span className="text-xs text-slate-400 italic">{t('nakes.no_child_profile')}</span>
+                            <span className="text-xs text-slate-400 italic">{parent.assignedNakesId === userProfile.uid ? t('nakes.no_child_profile') : 'Data anak tersedia setelah penugasan.'}</span>
                          ) : (
                            <div className="flex flex-wrap gap-2">
                              {parent.children.map(child => {

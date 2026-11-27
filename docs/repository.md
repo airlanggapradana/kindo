@@ -11,6 +11,10 @@ Jalankan perintah proyek dari folder utama yang berisi `package.json`.
 | `data/kpsp/extracted/` | Hasil ekstraksi mentah, teks pertanyaan, dan JSON yang sudah dibersihkan. |
 | `docs/` | Ringkasan arsitektur, blueprint Firebase, draf desain, dan referensi pengembangan. |
 | `scripts/` | Utilitas proyek yang masih digunakan, seperti pembersihan hasil build. |
+| `server/` | Modul backend autentikasi, pencarian puskesmas, dan Rusdi. Tidak diimpor oleh frontend. |
+| `app_knowledge/` | Dokumen panduan yang diberikan pengguna dan FAQ JSON terkurasi untuk Rusdi. Lihat `RUSDI_INTEGRATION.md` untuk status integrasi. |
+| `db/`, `compose.yaml` | Inisialisasi role PostgreSQL, migrasi knowledge, dan service pgvector lokal. |
+| `tests/` | Pengujian backend dan paket emulator Firebase terpisah. |
 | `archive/scripts/` | Skrip migrasi antarmuka dan perbaikan sekali pakai dari pengembangan sebelumnya. |
 | `archive/patches/` | Patch historis yang disimpan untuk referensi. |
 | `firebase-applet-config.json` | Konfigurasi yang diimpor frontend; tetap di root. |
@@ -49,6 +53,7 @@ langsung. Sebagian perubahan tidak aman diulang; baca isinya sebelum menjalankan
 - `npm run clean`: hapus `dist/` dan `server.js` hasil build, mendukung Windows, macOS, dan Linux.
 - Simpan eksperimen lokal di `.local/` dan konfigurasi rahasia di `.env`; keduanya diabaikan Git.
 - Hasil build, cache dependensi, log, dan file sementara tidak perlu dimasukkan ke repository.
+- Panduan Rusdi, database, key provider, dan batas verifikasi ada di [rusdi-setup.md](rusdi-setup.md).
 
 ## Pemuatan frontend
 

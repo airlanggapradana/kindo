@@ -1,72 +1,77 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isSignedIn() { return request.auth != null; }
-    function incoming() { return request.resource.data; }
-    function existing() { return resource.data; }
-    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
-    
-    function isValidChildProfile(data) {
-      return data.keys().hasAll(['userId', 'name', 'ageInMonths', 'heightCm', 'weightKg', 'gender', 'updatedAt']) 
-        && data.userId == request.auth.uid
-        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
-        && data.ageInMonths is number && data.ageInMonths >= 0
-        && data.heightCm is number && data.heightCm >= 0
-        && data.weightKg is number && data.weightKg >= 0
-        && (data.gender == 'Laki-laki' || data.gender == 'Perempuan')
-        && data.updatedAt == request.time;
+    function signedIn() { return request.auth != null; }
+    function user(uid) { return get(/databases/$(database)/documents/users/$(uid)).data; }
+    function hasUser(uid) { return exists(/databases/$(database)/documents/users/$(uid)); }
+    function admin() { return signedIn() && hasUser(request.auth.uid) && user(request.auth.uid).role == 'admin'; }
+    function nakes() { return signedIn() && hasUser(request.auth.uid) && user(request.auth.uid).role == 'nakes' && user(request.auth.uid).get('isVerified', false) == true; }
+    function healthAccess(owner) {
+      return signedIn() && (request.auth.uid == owner || admin() ||
+        (nakes() && hasUser(owner) && user(owner).get('assignedNakesId', null) == request.auth.uid));
     }
-
-    function isValidQuestionnaireResult(data) {
-      return data.keys().hasAll(['userId', 'profileId', 'ageCategory', 'answers', 'totalScore', 'createdAt'])
-        && data.userId == request.auth.uid
-        && data.profileId is string && data.profileId.size() > 0
-        && data.ageCategory is string
-        && data.answers is map
-        && data.totalScore is number
-        && data.createdAt == request.time;
+    function validId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function validChild(data) {
+      return data.keys().hasAll(['userId','name','ageInMonths','heightCm','weightKg','gender','updatedAt'])
+        && data.userId == request.auth.uid && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.ageInMonths is number && data.ageInMonths >= 0 && data.ageInMonths <= 240
+        && data.heightCm is number && data.heightCm >= 0 && data.heightCm <= 250
+        && data.weightKg is number && data.weightKg >= 0 && data.weightKg <= 250
+        && data.gender in ['Laki-laki','Perempuan'] && data.updatedAt == request.time;
     }
-
-    match /adminLogs/{logId} {
-      allow read, write: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    function validResult(data) {
+      return data.keys().hasAll(['userId','profileId','ageCategory','answers','totalScore','createdAt'])
+        && data.userId == request.auth.uid && data.profileId is string
+        && get(/databases/$(database)/documents/childProfiles/$(data.profileId)).data.userId == request.auth.uid
+        && data.ageCategory in ['3_bulan','6_bulan','9_bulan','12_bulan','15_bulan','18_bulan','21_bulan','24_bulan','30_bulan','36_bulan','42_bulan','48_bulan','54_bulan','60_bulan','66_bulan','72_bulan']
+        && data.answers is map && data.answers.size() == 10 && data.answers.values().hasOnly([0,1])
+        && data.totalScore is int && data.totalScore >= 0 && data.totalScore <= 10 && data.createdAt == request.time;
     }
-
-    match /{document=**} {
-      allow read, write: if false;
+    function carePair(parentId, nakesId) {
+      return hasUser(parentId) && hasUser(nakesId) && user(parentId).role == 'orang_tua'
+        && user(parentId).get('assignedNakesId', null) == nakesId
+        && user(nakesId).role == 'nakes' && user(nakesId).get('isVerified', false) == true;
     }
-
-    match /users/{userId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && (userId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      allow update: if isSignedIn() && (
-        userId == request.auth.uid || 
-        incoming().diff(existing()).affectedKeys().hasOnly(['assignedNakesId']) || 
-        incoming().diff(existing()).affectedKeys().hasOnly(['isOnline', 'lastActive']) || 
-        incoming().diff(existing()).affectedKeys().hasOnly(['isOnline']) || 
-        incoming().diff(existing()).affectedKeys().hasOnly(['lastActive']) || 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
-      );
-      allow delete: if isSignedIn() && userId == request.auth.uid;
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || admin() || resource.data.role == 'nakes' || (nakes() && resource.data.role == 'orang_tua'));
+      allow create: if admin() || (signedIn() && request.auth.uid == uid && request.resource.data.uid == uid
+        && request.resource.data.role in ['orang_tua','nakes'] && request.resource.data.get('isVerified', false) == false
+        && request.resource.data.keys().hasOnly(['uid','name','email','role','province','regency','district','village','createdAt','sip','isVerified']));
+      allow update: if admin() || (signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','province','regency','district','village','isOnline','lastActive']))
+        || (nakes() && resource.data.role == 'orang_tua' && resource.data.get('assignedNakesId', null) == null
+          && request.resource.data.assignedNakesId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['assignedNakesId']));
+      allow delete: if signedIn() && request.auth.uid == uid && resource.data.role != 'admin';
     }
-
-    match /messages/{messageId} {
-      allow read, write: if isSignedIn();
+    match /childProfiles/{id} {
+      allow read: if healthAccess(resource.data.userId);
+      allow create: if signedIn() && validId(id) && validChild(request.resource.data);
+      allow update: if signedIn() && resource.data.userId == request.auth.uid && validChild(request.resource.data);
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
     }
-
-    match /childProfiles/{profileId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && isValidId(profileId) && isValidChildProfile(incoming());
-      allow update: if isSignedIn() && existing().userId == request.auth.uid && isValidChildProfile(incoming());
-      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    match /questionnaireResults/{id} {
+      allow read: if healthAccess(resource.data.userId);
+      allow create: if signedIn() && validId(id) && validResult(request.resource.data);
+      allow update: if signedIn() && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['aiAnalysis','aiAnalysisEn'])
+        && request.resource.data.aiAnalysis is string && request.resource.data.aiAnalysis.size() <= 12000;
     }
-    
-    match /questionnaireResults/{resultId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && isValidId(resultId) && isValidQuestionnaireResult(incoming());
-      allow update: if isSignedIn() && existing().userId == request.auth.uid 
-        && incoming().diff(existing()).affectedKeys().hasOnly(['aiAnalysis'])
-        && incoming().aiAnalysis is string && incoming().aiAnalysis.size() <= 10000;
+    match /messages/{id} {
+      allow read: if signedIn() && (resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.receiverId is string && request.resource.data.text is string
+        && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 5000
+        && request.resource.data.createdAt == request.time && request.resource.data.read == false
+        && request.resource.data.chatId in [request.resource.data.senderId + '_' + request.resource.data.receiverId, request.resource.data.receiverId + '_' + request.resource.data.senderId]
+        && (carePair(request.auth.uid, request.resource.data.receiverId) || carePair(request.resource.data.receiverId, request.auth.uid));
+      allow update: if signedIn() && resource.data.receiverId == request.auth.uid && request.resource.data.read == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
     }
+    match /adminLogs/{id} {
+      allow read: if admin();
+      allow create: if admin() && request.resource.data.adminId == request.auth.uid;
+    }
+    match /{document=**} { allow read, write: if false; }
   }
 }
-
