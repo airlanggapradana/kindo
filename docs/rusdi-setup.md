@@ -2,8 +2,9 @@
 
 Rusdi tersedia setelah login pada tombol Tanya Rusdi. Statistik berasal dari
 16 workbook KPSP yang cocok dengan bank soal aplikasi: 16 formulir, masing-masing
-10 soal, total 160 butir. Knowledge penggunaan aplikasi terdapat di
-[`app_knowledge/rusdi-app.json`](../app_knowledge/rusdi-app.json).
+10 soal, total 160 butir. Knowledge penggunaan aplikasi dibaca langsung dari
+seluruh file Markdown panduan di folder [`app_knowledge/`](../app_knowledge/)
+(kecuali `README.md`, `RUSDI_INTEGRATION.md`, dan dokumen ber-`category: meta`).
 
 ## Database lokal
 

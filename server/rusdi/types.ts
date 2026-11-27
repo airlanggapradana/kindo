@@ -1,5 +1,5 @@
 export type ActionId = 'open_screening' | 'open_education' | 'open_consultation' | 'open_puskesmas' | 'open_onboarding' | 'open_dashboard';
-export interface KnowledgeDocument { id: string; title: string; keywords: string[]; answer: string; action: ActionId | null }
+export interface KnowledgeDocument { id: string; title: string; keywords: string[]; answer: string; action: ActionId | null; sourceFile?: string; category?: string }
 export interface KnowledgeQuestion { number: number; text: string; appText: string; category: string; originalCategory: string; row: number }
 export interface KnowledgeForm { ageMonths: number; file: string; hash: string; sheet: string; questions: KnowledgeQuestion[] }
 export interface KnowledgeSnapshot { version: string; bankHash: string; sourceHash: string; documents: KnowledgeDocument[]; forms: KnowledgeForm[]; textDifferences: { ageMonths: number; number: number }[] }

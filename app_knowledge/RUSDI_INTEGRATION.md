@@ -6,11 +6,12 @@ Sembilan panduan bernomor dan `README.md` disalin identik dari
 
 ## Sumber yang dipakai aplikasi
 
-- `rusdi-app.json`: FAQ yang sudah dikurasi terhadap implementasi aktif. Dibaca
-  oleh `scripts/build-knowledge.ts`, dipublikasikan ke PostgreSQL/pgvector melalui
-  `npm run knowledge:ingest`, dan disertakan dalam snapshot backend.
-- Panduan Markdown bernomor: bahan referensi untuk pengembangan knowledge.
-  Belum diimpor mentah; perlu peninjauan sebelum jawaban baru dipublikasikan.
+- Seluruh dokumen Markdown panduan pada folder `app_knowledge/` (`01_tentang_kindo.md`
+  hingga `09_faq_dan_troubleshooting.md`, serta file `.md` baru selain `README.md`,
+  `RUSDI_INTEGRATION.md`, dan dokumen ber-`category: meta`): dibaca otomatis oleh
+  `scripts/build-knowledge.ts`, dipecah per bagian heading (`##`/`###`), dipublikasikan
+  ke PostgreSQL/pgvector melalui `npm run knowledge:ingest`, dan disertakan dalam
+  snapshot backend `server/rusdi/knowledge-snapshot.json`.
 - Statistik KPSP: dihitung dari 16 workbook di `data/kpsp/source/` dan diperiksa
   terhadap bank soal aktif. Totalnya 160 butir, bukan hasil perhitungan model.
 

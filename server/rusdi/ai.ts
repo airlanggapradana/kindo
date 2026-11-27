@@ -11,7 +11,7 @@ export async function embed(text: string, taskType: 'RETRIEVAL_DOCUMENT' | 'RETR
   if (process.env.RUSDI_EMBEDDING_DIMENSIONS && Number(process.env.RUSDI_EMBEDDING_DIMENSIONS) !== 768) throw new Error('This schema requires 768 dimensions');
   if (model !== 'gemini-embedding-001') throw new Error('This adapter supports gemini-embedding-001. Add and validate an adapter before changing models.');
   const response = await ai.models.embedContent({ model, contents: text,
-    config: { outputDimensionality: 768, taskType, httpOptions: { timeout: 3000 } } });
+    config: { outputDimensionality: 768, taskType, httpOptions: { timeout: 10000 } } });
   const values = response.embeddings?.[0]?.values;
   if (!values) throw new Error('Embedding response missing');
   vectorLiteral(values);
