@@ -18,6 +18,14 @@
     </image:image>
   </url>
 
+  <!-- Buku Panduan KINDO -->
+  <url>
+    <loc>https://kindo.fun/panduan</loc>
+    <lastmod>2026-11-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
   <!-- Halaman Kebijakan Privasi -->
   <url>
     <loc>https://kindo.fun/privacy-policy</loc>

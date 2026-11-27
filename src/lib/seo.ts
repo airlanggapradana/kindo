@@ -181,6 +181,22 @@ export const PAGE_SEO = {
     robots: 'noindex, nofollow',
   }),
 
+  guide: (language: 'id' | 'en' = 'id'): SEOMeta => ({
+    title: language === 'en' ? 'KINDO User Guide - Kindo' : 'Buku Panduan KINDO - Kindo',
+    description: language === 'en'
+      ? 'Step-by-step help for KINDO accounts, child profiles, growth records, KPSP screening, PDF reports, consultations, and health center search.'
+      : 'Panduan penggunaan KINDO: akun, profil anak, pencatatan pertumbuhan, skrining KPSP, laporan PDF, konsultasi Nakes, dan pencarian puskesmas.',
+    canonical: `${BASE_URL}/panduan`,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: language === 'en' ? 'KINDO User Guide' : 'Buku Panduan KINDO',
+      url: `${BASE_URL}/panduan`,
+      inLanguage: language,
+      publisher: { '@type': 'Organization', name: 'Kindo', url: `${BASE_URL}/` },
+    },
+  }),
+
   privacyPolicy: (): SEOMeta => ({
     title: 'Kebijakan Privasi - Kindo',
     description:

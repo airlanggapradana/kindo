@@ -55,6 +55,16 @@ langsung. Sebagian perubahan tidak aman diulang; baca isinya sebelum menjalankan
 - Hasil build, cache dependensi, log, dan file sementara tidak perlu dimasukkan ke repository.
 - Panduan Rusdi, database, key provider, dan batas verifikasi ada di [rusdi-setup.md](rusdi-setup.md).
 
+## Buku panduan pengguna
+
+Halaman publik `/panduan` memakai `src/components/UserGuideView.tsx` beserta CSS
+yang hanya dimuat saat dibuka. Konten Indonesia/Inggris, audiens, dan pencarian berada di
+`src/data/guideData.ts`. Setiap bab mencatat dokumen asal di `sourceFiles`.
+Konten dikurasi dari `app_knowledge/`, lalu dicocokkan dengan implementasi aktif;
+Markdown lama tidak ditampilkan mentah dan indeks Rusdi tidak berubah.
+Perbarui tanggal tinjauan setelah meninjau ulang isi. Parameter `q` dan `peran`
+menyimpan pencarian/filter, sedangkan hash URL menunjuk bab yang dapat dibagikan.
+
 ## Pemuatan frontend
 
 Halaman di `src/App.tsx` memakai `React.lazy`; `PageMotionWrapper` menampilkan

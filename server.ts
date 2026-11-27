@@ -522,6 +522,12 @@ async function startServer() {
     </image:image>
   </url>
   <url>
+    <loc>${SITE_URL}/panduan</loc>
+    <lastmod>2026-11-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>${SITE_URL}/privacy-policy</loc>
     <lastmod>2026-11-07</lastmod>
     <changefreq>monthly</changefreq>

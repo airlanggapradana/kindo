@@ -1,10 +1,9 @@
-import React, { lazy, Suspense, useState, useMemo, useEffect, useRef } from 'react';
+import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { AgeCategory, Answer, ChildProfile, UserProfile } from './types';
-import { QUESTIONS_DATA, AGE_EQUIPMENT_DATA } from './data/questions';
+import type { AgeCategory, ChildProfile, UserProfile } from './types';
 import { cn, formatIndonesianName } from './lib/utils';
-import { Baby, Info, CheckCircle2, AlertCircle, RefreshCcw, ArrowRight, Activity, Smile, ArrowLeft, Check, LogOut, Loader2, Sparkles, Moon, Sun, Users, MessageSquare, Download, MapPin, Languages, PanelLeftClose, PanelLeftOpen, Menu, X, BookOpen } from 'lucide-react';
+import { CheckCircle2, Activity, Smile, ArrowLeft, LogOut, Moon, Sun, MessageSquare, Languages, PanelLeftClose, PanelLeftOpen, Menu, X, BookOpen, BookMarked } from 'lucide-react';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
 import { auth, db } from './lib/firebase';
@@ -14,6 +13,7 @@ import { useLanguage } from './contexts/LanguageContext';
 import { applySEO, PAGE_SEO } from './lib/seo';
 import DeferredPuskesmasMapModal from './components/DeferredPuskesmasMapModal';
 import type { RusdiAction } from './components/RusdiDock';
+import type { GuideAction } from './data/guideData';
 
 const LandingView = lazy(() => import('./components/LandingView'));
 const AuthView = lazy(() => import('./components/AuthView'));
@@ -21,8 +21,6 @@ const ChildOnboardingView = lazy(() => import('./components/ChildOnboardingView'
 const DashboardView = lazy(() => import('./components/DashboardView'));
 const NakesDashboardView = lazy(() => import('./components/NakesDashboardView'));
 const AdminDashboardView = lazy(() => import('./components/AdminDashboardView'));
-const ChatView = lazy(() => import('./components/ChatView'));
-const ParentChatList = lazy(() => import('./components/ParentChatList'));
 const KonsultasiNakesView = lazy(() => import('./components/KonsultasiNakesView'));
 const QuestionnaireView = lazy(() => import('./components/QuestionnaireView'));
 const ResultView = lazy(() => import('./components/ResultView'));
@@ -30,6 +28,7 @@ const EdukasiTumbuhKembang = lazy(() => import('./components/EdukasiTumbuhKemban
 const PrivacyPolicyView = lazy(() => import('./components/PrivacyPolicyView'));
 const TermsOfServiceView = lazy(() => import('./components/TermsOfServiceView'));
 const RusdiDock = lazy(() => import('./components/RusdiDock'));
+const UserGuideView = lazy(() => import('./components/UserGuideView'));
 
 type ViewState = 'HOME' | 'ONBOARDING' | 'DASHBOARD' | 'QUESTIONNAIRE' | 'RESULT' | 'HISTORY_DETAIL' | 'EDUKASI' | 'NAKES_DASHBOARD' | 'NAKES_CHAT' | 'PARENT_CHAT_LIST' | 'PARENT_CHAT' | 'ADMIN_DASHBOARD';
 
@@ -67,7 +66,6 @@ export default function App() {
   const [selectedHistory, setSelectedHistory] = useState<any>(null);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [unreadCountsBySender, setUnreadCountsBySender] = useState<Record<string, number>>({});
-  const [showLanding, setShowLanding] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [rusdiMapOpen, setRusdiMapOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
@@ -81,8 +79,13 @@ export default function App() {
     localStorage.setItem('sidebar_collapsed', String(isSidebarCollapsed));
   }, [isSidebarCollapsed]);
 
-  // Apply SEO metadata on authenticated view changes (all private — noindex)
+  // Shared guide metadata stays public; authenticated application views use noindex.
   useEffect(() => {
+    if (location.pathname === '/panduan') {
+      applySEO(PAGE_SEO.guide(language));
+      return;
+    }
+    if (location.pathname === '/privacy-policy' || location.pathname === '/terms-of-service') return;
     if (!user) return; // Public routes handle their own SEO (LandingView, AuthView)
     switch (view) {
       case 'DASHBOARD':
@@ -106,7 +109,7 @@ export default function App() {
         // ONBOARDING, PARENT_CHAT_LIST, PARENT_CHAT — keep dashboard noindex
         applySEO(PAGE_SEO.dashboard());
     }
-  }, [view, age, user]);
+  }, [view, age, user, location.pathname, language]);
 
   const effectiveUid = user?.uid;
 
@@ -307,6 +310,8 @@ export default function App() {
   const isLoadingState = loadingUser || loadingProfile;
   const currentPageKey = isLoadingState
     ? '__boot__'
+    : location.pathname === '/panduan'
+    ? 'guide:/panduan'
     : location.pathname === '/privacy-policy' || location.pathname === '/terms-of-service'
     ? `legal:${location.pathname}`
     : !user
@@ -364,6 +369,45 @@ export default function App() {
     );
   }
 
+  if (location.pathname === '/panduan') {
+    const handleGuideAction = (action: GuideAction) => {
+      if (!user) {
+        navigate('/auth/login');
+        return;
+      }
+      if (view === 'QUESTIONNAIRE' && Object.keys(answers).length) {
+        const message = language === 'en'
+          ? 'Your unsaved screening answers will be left behind. Continue?'
+          : 'Jawaban skrining yang belum disimpan akan ditinggalkan. Lanjutkan?';
+        if (!window.confirm(message)) return;
+      }
+      if (action === 'onboarding' && userProfile?.role === 'orang_tua') {
+        setView('ONBOARDING');
+      } else if (action === 'education' && userProfile?.role === 'orang_tua') {
+        setView('EDUKASI');
+      } else if (action === 'consultation' && userProfile?.role !== 'admin') {
+        setView(userProfile?.role === 'nakes' ? 'NAKES_CHAT' : 'PARENT_CHAT_LIST');
+      } else {
+        setView(userProfile?.role === 'admin' ? 'ADMIN_DASHBOARD' : userProfile?.role === 'nakes' ? 'NAKES_DASHBOARD' : childProfiles.length ? 'DASHBOARD' : 'ONBOARDING');
+      }
+      navigate('/');
+    };
+    return (
+      <>
+        <KindoTransitionCurtain active={curtainActive} variant={curtainVariant} />
+        <PageMotionWrapper pageKey="guide:/panduan" disableTransform>
+          <UserGuideView
+            userRole={userProfile?.role}
+            isSignedIn={Boolean(user)}
+            theme={theme}
+            onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            onAction={handleGuideAction}
+          />
+        </PageMotionWrapper>
+      </>
+    );
+  }
+
   if (location.pathname === '/privacy-policy') {
     return (
       <>
@@ -399,8 +443,6 @@ export default function App() {
               <Route path="/" element={<LandingView />} />
               <Route path="/auth/login" element={<AuthView initialMode="login" onBack={() => navigate('/')} />} />
               <Route path="/auth/register" element={<AuthView initialMode="register" onBack={() => navigate('/')} />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicyView />} />
-              <Route path="/terms-of-service" element={<TermsOfServiceView />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </PageMotionWrapper>
@@ -531,6 +573,14 @@ export default function App() {
                      )}
                    </button>
                  )}
+                 <button
+                   type="button"
+                   onClick={() => { setMobileMenuOpen(false); navigate('/panduan'); }}
+                   className="flex min-h-11 items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                 >
+                   <BookMarked className="w-5 h-5 opacity-80" aria-hidden="true" />
+                   {language === 'en' ? 'User Guide' : 'Buku Panduan'}
+                 </button>
               </nav>
 
               <div className="mt-auto pt-4 border-t border-white/10 space-y-1">
@@ -818,6 +868,16 @@ export default function App() {
               </div>
             )
           )}
+          <button
+            type="button"
+            onClick={() => navigate('/panduan')}
+            title={language === 'en' ? 'User Guide' : 'Buku Panduan'}
+            aria-label={language === 'en' ? 'User Guide' : 'Buku Panduan'}
+            className={cn('flex min-h-11 items-center rounded-xl text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-colors', isSidebarCollapsed ? 'h-11 w-11 justify-center' : 'w-full gap-3 px-4 py-3')}
+          >
+            <BookMarked className="h-5 w-5 shrink-0 opacity-80" aria-hidden="true" />
+            {!isSidebarCollapsed && <span>{language === 'en' ? 'User Guide' : 'Buku Panduan'}</span>}
+          </button>
         </nav>
 
         {/* Settings Area */}

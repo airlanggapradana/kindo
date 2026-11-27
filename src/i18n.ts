@@ -348,15 +348,32 @@ Object.values(QUESTIONS_DATA).forEach((categories) => {
   });
 });
 
+const languagePreferenceKey = 'kindo_language';
+const preferredLanguage = () => {
+  try {
+    return window.localStorage.getItem(languagePreferenceKey) === 'en' ? 'en' : 'id';
+  } catch {
+    return 'id';
+  }
+};
+
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'id',
+    lng: preferredLanguage(),
     fallbackLng: 'id',
     interpolation: {
       escapeValue: false, 
     }
   });
+
+i18n.on('languageChanged', language => {
+  try {
+    window.localStorage.setItem(languagePreferenceKey, language === 'en' ? 'en' : 'id');
+  } catch {
+    // Changing language still works when browser storage is unavailable.
+  }
+});
 
 export default i18n;

@@ -17,6 +17,11 @@ Sembilan panduan bernomor dan `README.md` disalin identik dari
 
 ## Perbedaan yang sudah ditemukan
 
+Buku panduan publik tersedia pada `/panduan`. Kontennya dikurasi secara terpisah
+di `src/data/guideData.ts`, termasuk koreksi perilaku puskesmas dan batas fitur
+konsultasi. Setiap bab menyimpan nama dokumen rujukan; perubahan panduan tidak
+otomatis mengubah FAQ atau indeks Rusdi.
+
 Dokumen asli menjelaskan beberapa perilaku sebelum pembaruan PRD. Khusus
 pencarian puskesmas pada panduan 01, 06, 09, serta ringkasan README:
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useScroll, useTransform, useSpring, useReducedMotion } from 'motion/react';
-import { Shield, Sparkles, Activity, ArrowRight, HeartPulse, LineChart, Stethoscope, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Shield, Sparkles, ArrowRight, LineChart, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { applySEO, PAGE_SEO } from '../lib/seo';
@@ -151,6 +151,7 @@ export default function LandingView() {
               onClick={() => scrollToSection('tim-kami')} 
               className={cn("cursor-pointer transition-colors relative", activeSection === 'tim-kami' ? "text-[#bef264] after:absolute after:-bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-[#bef264] after:rounded-full" : "text-white/70 hover:text-white")}
             >Tim Kami</button>
+            <Link to="/panduan" className="hidden xl:inline-flex text-white/80 hover:text-white transition-colors">Buku Panduan</Link>
           </div>
 
           <div className="flex items-center gap-4">
@@ -449,7 +450,8 @@ export default function LandingView() {
               </div>
               <span>© {new Date().getFullYear()} Kindo. All rights reserved.</span>
            </div>
-           <nav aria-label="Footer links" className="flex gap-6">
+           <nav aria-label="Footer links" className="flex flex-wrap justify-center gap-x-6 gap-y-3">
+             <Link to="/panduan" className="text-sm font-semibold text-white/80 hover:text-white transition-colors">Buku Panduan</Link>
              <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
              <Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
            </nav>
