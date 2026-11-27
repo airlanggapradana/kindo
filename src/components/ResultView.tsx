@@ -4,15 +4,13 @@ import { AgeCategory, ChildProfile } from '../types';
 import { QUESTIONS_DATA } from '../data/questions';
 import { cn, formatAgeCategory } from '../lib/utils';
 import { Sparkles, Loader2, Download, ArrowLeft, Check, RefreshCcw, ChevronDown, ChevronUp, MapPin, MessageSquare, Activity } from 'lucide-react';
-import { toJpeg } from 'html-to-image';
-import jsPDF from 'jspdf';
 import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '../contexts/LanguageContext';
 import StatusBadge from './domain/StatusBadge';
 import ScoreRing from './domain/ScoreRing';
 import AspectCard from './domain/AspectCard';
 import DisclaimerNote from './domain/DisclaimerNote';
-import PuskesmasMapModal from './PuskesmasMapModal';
+import PuskesmasMapModal from './DeferredPuskesmasMapModal';
 import EdukasiTumbuhKembang from './EdukasiTumbuhKembang';
 import { EDUKASI_CATEGORIES } from '../data/edukasiData';
 
@@ -107,6 +105,10 @@ export default function ResultView({
         }
 
         try {
+          const [{ toJpeg }, { default: jsPDF }] = await Promise.all([
+            import('html-to-image'),
+            import('jspdf'),
+          ]);
           const dataUrl = await toJpeg(element, { quality: 0.98, backgroundColor: '#ffffff', pixelRatio: 2 });
           const pdfWidthIn = 8.27; // A4 width in inches
           const pdfHeightIn = (element.offsetHeight * pdfWidthIn) / element.offsetWidth;

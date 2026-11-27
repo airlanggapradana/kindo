@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { lazy, useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AgeCategory, Answer, ChildProfile, UserProfile } from './types';
@@ -8,24 +8,25 @@ import { Baby, Info, CheckCircle2, AlertCircle, RefreshCcw, ArrowRight, Activity
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
 import { auth, db } from './lib/firebase';
-import LandingView from './components/LandingView';
-import AuthView from './components/AuthView';
-import ChildOnboardingView from './components/ChildOnboardingView';
-import DashboardView from './components/DashboardView';
-import NakesDashboardView from './components/NakesDashboardView';
-import AdminDashboardView from './components/AdminDashboardView';
-import ChatView from './components/ChatView';
-import ParentChatList from './components/ParentChatList';
-import KonsultasiNakesView from './components/KonsultasiNakesView';
-import QuestionnaireView from './components/QuestionnaireView';
-import ResultView from './components/ResultView';
-import EdukasiTumbuhKembang from './components/EdukasiTumbuhKembang';
-import PrivacyPolicyView from './components/PrivacyPolicyView';
-import TermsOfServiceView from './components/TermsOfServiceView';
 import BottomNav from './components/domain/BottomNav';
 import { KindoTransitionCurtain, PageMotionWrapper, KINDO_LOGO_URL } from './components/PageTransition';
 import { useLanguage } from './contexts/LanguageContext';
 import { applySEO, PAGE_SEO } from './lib/seo';
+
+const LandingView = lazy(() => import('./components/LandingView'));
+const AuthView = lazy(() => import('./components/AuthView'));
+const ChildOnboardingView = lazy(() => import('./components/ChildOnboardingView'));
+const DashboardView = lazy(() => import('./components/DashboardView'));
+const NakesDashboardView = lazy(() => import('./components/NakesDashboardView'));
+const AdminDashboardView = lazy(() => import('./components/AdminDashboardView'));
+const ChatView = lazy(() => import('./components/ChatView'));
+const ParentChatList = lazy(() => import('./components/ParentChatList'));
+const KonsultasiNakesView = lazy(() => import('./components/KonsultasiNakesView'));
+const QuestionnaireView = lazy(() => import('./components/QuestionnaireView'));
+const ResultView = lazy(() => import('./components/ResultView'));
+const EdukasiTumbuhKembang = lazy(() => import('./components/EdukasiTumbuhKembang'));
+const PrivacyPolicyView = lazy(() => import('./components/PrivacyPolicyView'));
+const TermsOfServiceView = lazy(() => import('./components/TermsOfServiceView'));
 
 type ViewState = 'HOME' | 'ONBOARDING' | 'DASHBOARD' | 'QUESTIONNAIRE' | 'RESULT' | 'HISTORY_DETAIL' | 'EDUKASI' | 'NAKES_DASHBOARD' | 'NAKES_CHAT' | 'PARENT_CHAT_LIST' | 'PARENT_CHAT' | 'ADMIN_DASHBOARD';
 

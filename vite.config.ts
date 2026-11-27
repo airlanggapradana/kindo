@@ -7,6 +7,28 @@ export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
     plugins: [react(), tailwindcss()],
+    build: {
+      rolldownOptions: {
+        output: {
+          codeSplitting: {
+            // Cache stable SDK/framework code separately from application pages.
+            includeDependenciesRecursively: true,
+            groups: [
+              // Shared SDK initialization must not depend on the application entry.
+              {
+                name: 'firebase-core',
+                test: /[\\/]node_modules[\\/]@firebase[\\/](?!auth[\\/]|firestore[\\/])/,
+                priority: 10,
+              },
+              { name: 'firebase-firestore', test: /[\\/]node_modules[\\/]@firebase[\\/]firestore[\\/]/ },
+              { name: 'firebase-auth', test: /[\\/]node_modules[\\/]@firebase[\\/]auth[\\/]/ },
+              { name: 'react-vendor', test: /[\\/]node_modules[\\/](?:react|react-dom|scheduler)[\\/]/ },
+              { name: 'motion-vendor', test: /[\\/]node_modules[\\/](?:motion|motion-dom|motion-utils|framer-motion)[\\/]/ },
+            ],
+          },
+        },
+      },
+    },
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.env.GOOGLE_MAPS_PLATFORM_KEY': JSON.stringify(env.GOOGLE_MAPS_PLATFORM_KEY || ''),

@@ -13,7 +13,7 @@ import {
 import { format, differenceInMonths } from 'date-fns';
 import { id as idLocale, enUS } from 'date-fns/locale';
 import { cn, formatIndonesianName, formatAgeCategory } from '../lib/utils';
-import PuskesmasMapModal from './PuskesmasMapModal';
+import PuskesmasMapModal from './DeferredPuskesmasMapModal';
 import StatusBadge from './domain/StatusBadge';
 import { useLanguage } from '../contexts/LanguageContext';
 

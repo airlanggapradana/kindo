@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { cn } from '../lib/utils';
+import LoadingState from './LoadingState';
 
 export const KINDO_LOGO_URL =
   'https://res.cloudinary.com/airlanggapradana/image/upload/v1793887621/Smiling_Child_Growth_Healthcare_Logo_bwwi6q.png';
@@ -221,7 +222,9 @@ export function PageMotionWrapper({
       }}
       className={cn(className)}
     >
-      {children}
+      <Suspense fallback={<LoadingState />}>
+        {children}
+      </Suspense>
     </motion.div>
   );
 }

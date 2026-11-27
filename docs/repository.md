@@ -49,3 +49,17 @@ langsung. Sebagian perubahan tidak aman diulang; baca isinya sebelum menjalankan
 - `npm run clean`: hapus `dist/` dan `server.js` hasil build, mendukung Windows, macOS, dan Linux.
 - Simpan eksperimen lokal di `.local/` dan konfigurasi rahasia di `.env`; keduanya diabaikan Git.
 - Hasil build, cache dependensi, log, dan file sementara tidak perlu dimasukkan ke repository.
+
+## Pemuatan frontend
+
+Halaman di `src/App.tsx` memakai `React.lazy`; `PageMotionWrapper` menampilkan
+indikator pemuatan melalui `Suspense`. Grafik ikut dimuat bersama dashboard.
+`DeferredPuskesmasMapModal` baru memuat kode peta saat dibuka pertama kali,
+lalu mempertahankan instance modal untuk animasi penutupan dan pilihan lokasi.
+Pustaka PDF dan konversi gambar dimuat saat pengguna menekan tombol ekspor.
+
+Konfigurasi build memisahkan React, Motion, dan SDK Firebase untuk cache browser.
+Dependensi inisialisasi Firebase berada di grup `firebase-core` dengan prioritas
+lebih tinggi agar tidak terbentuk ketergantungan melingkar melalui entry aplikasi.
+Setelah mengubah pembagian bundle, uji hasil build produksi di browser, termasuk
+login, skrining, peta, dan ekspor PDF; pemeriksaan TypeScript saja tidak cukup.
